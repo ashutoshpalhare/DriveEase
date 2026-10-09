@@ -1,0 +1,35 @@
+:root {
+  --de-brand: #0f3d5e;
+  --de-brand-dark: #0a2b43;
+  --de-accent: #ffb703;
+  --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+body { background: #f6f8fb; }
+.bg-brand { background: var(--de-brand) !important; }
+.text-brand { color: var(--de-brand) !important; }
+.btn-brand { background: var(--de-brand); border-color: var(--de-brand); color: #fff; }
+.btn-brand:hover, .btn-brand:focus { background: var(--de-brand-dark); border-color: var(--de-brand-dark); color: #fff; }
+.navbar .nav-link.active { color: var(--de-accent) !important; font-weight: 600; }
+
+.hero {
+  background: linear-gradient(135deg, rgba(10,43,67,.92), rgba(15,61,94,.78)), url("../img/bg-2.jpg") center/cover;
+  color: #fff; padding: 4.5rem 0 6.5rem;
+}
+.hero h1 { font-weight: 800; letter-spacing: -.5px; }
+.search-card { margin-top: -4rem; border: 0; border-radius: 1rem; box-shadow: 0 .75rem 2rem rgba(10,43,67,.15); }
+
+.category-tile { border: 0; border-radius: 1rem; transition: transform .15s, box-shadow .15s; text-decoration: none; color: inherit; }
+.category-tile:hover { transform: translateY(-3px); box-shadow: 0 .5rem 1.25rem rgba(0,0,0,.1); }
+.category-tile .icon { width: 56px; height: 56px; border-radius: 50%; background: #e8f1f8; color: var(--de-brand); display: grid; place-items: center; font-size: 1.4rem; }
+
+.car-card { border: 0; border-radius: 1rem; overflow: hidden; transition: transform .15s, box-shadow .15s; }
+.car-card:hover { transform: translateY(-3px); box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.12); }
+.car-card .car-img { height: 190px; object-fit: contain; background: #fff; padding: .75rem; width: 100%; }
+.car-card .badge-status { position: absolute; top: .75rem; right: .75rem; }
+.spec { font-size: .85rem; color: #6c757d; }
+.price { font-size: 1.35rem; font-weight: 700; color: var(--de-brand); }
+.step-num { width: 44px; height: 44px; border-radius: 50%; background: var(--de-accent); color: #222; font-weight: 700; display: grid; place-items: center; }
+.auth-card { max-width: 520px; margin: 2.5rem auto; border: 0; border-radius: 1rem; box-shadow: 0 .75rem 2rem rgba(10,43,67,.12); }
+.detail-img { background: #fff; border-radius: 1rem; padding: 1rem; max-height: 380px; width: 100%; object-fit: contain; }
+@media (max-width: 575.98px) { .hero { padding: 3rem 0 5.5rem; } .hero h1 { font-size: 1.9rem; } }
+.hero-sub { opacity: .92; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
