@@ -1,253 +1,102 @@
-<!DOCTYPE html>
-<html>
-<?php 
-session_start();
-require 'connection.php';
-$conn = Connect();
-?>
-<head>
-<link rel="shortcut icon" type="image/png" href="assets/img/P.png.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-<link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
-<link rel="stylesheet" href="assets/w3css/w3.css">
-<link rel="stylesheet" type="text/css" href="assets/css/customerlogin.css">
-<script type="text/javascript" src="assets/js/jquery.min.js"></script>
-<script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
-<link rel="stylesheet" type="text/css" media="screen" href="assets/css/clientpage.css" />
-<link rel="stylesheet" type="text/css" media="screen" href="assets/css/bookingconfirm.css" />
-</head>
-<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
-<!-- Navigation -->
-    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation" style="color: black">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
-                    <i class="fa fa-bars"></i>
-                    </button>
-                <a class="navbar-brand page-scroll" href="index.php">
-                   PATNA CAR RENTAL </a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/layout.php';
 
-            <?php
-                if(isset($_SESSION['login_client'])){
-            ?> 
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_client']; ?></a>
-                    </li>
-                    <li>
-                    <ul class="nav navbar-nav navbar-right">
-            <li><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> Control Panel <span class="caret"></span> </a>
-                <ul class="dropdown-menu">
-              <li> <a href="entercar.php">Add Car</a></li>
-              <li> <a href="enterdriver.php"> Add Driver</a></li>
-              <li> <a href="clientview.php">View</a></li>
+$user = require_role('customer');
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!$id || $id < 1) { http_response_code(400); exit('Invalid booking reference.'); }
 
-            </ul>
-            </li>
-          </ul>
-                    </li>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-            
-            <?php
-                }
-                else if (isset($_SESSION['login_customer'])){
-            ?>
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_customer']; ?></a>
-                    </li>
-                    <ul class="nav navbar-nav">
-            <li><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Garagge <span class="caret"></span> </a>
-                <ul class="dropdown-menu">
-              <li> <a href="prereturncar.php">Return Now</a></li>
-              <li> <a href="mybookings.php"> My Bookings</a></li>
-            </ul>
-            </li>
-          </ul>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-
-            <?php
+if (is_post()) {
+    csrf_check();
+    try {
+        db_transaction(function () use ($id, $user): void {
+            $b = db_one('SELECT id, customer_username, rent_start_date, rent_end_date, fare, charge_type, booking_status, return_status FROM rentedcars WHERE id = ? FOR UPDATE', [$id]);
+            if (!$b || $b['customer_username'] !== $user['id']) {
+                throw new DomainException('Booking not found.');
             }
-                else {
-            ?>
-
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="clientlogin.php">Client</a>
-                    </li>
-                    <li>
-                        <a href="customerlogin.php">Customer</a>
-                    </li>
-                    <li>
-                        <a href="#"> FAQ </a>
-                    </li>
-                </ul>
-            </div>
-                <?php   }
-                ?>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-<body>
-
-<?php 
-$id = $_GET["id"];
-$distance = NULL;
-$distance_or_days = $conn->real_escape_string($_POST['distance_or_days']);
-$fare = $conn->real_escape_string($_POST['hid_fare']);
-$total_amount = $distance_or_days * $fare;
-$car_return_date = date('Y-m-d');
-$return_status = "R";
-$login_customer = $_SESSION['login_customer'];
-
-$sql0 = "SELECT rc.id, rc.rent_end_date, rc.charge_type, rc.rent_start_date, c.car_name, c.car_nameplate FROM rentedcars rc, cars c WHERE id = '$id' AND c.car_id = rc.car_id";
-$result0 = $conn->query($sql0);
-
-if(mysqli_num_rows($result0) > 0) {
-    while($row0 = mysqli_fetch_assoc($result0)){
-            $rent_end_date = $row0["rent_end_date"];  
-            $rent_start_date = $row0["rent_start_date"];
-            $car_name = $row0["car_name"];
-            $car_nameplate = $row0["car_nameplate"];
-            $charge_type = $row0["charge_type"];
+            if ($b['return_status'] !== 'NR' || !in_array($b['booking_status'], ['confirmed', 'active'], true)) {
+                throw new DomainException('This booking has already been returned.');
+            }
+            $days = rental_days((string)$b['rent_start_date'], (string)$b['rent_end_date']);
+            $distance = null;
+            if ($b['charge_type'] === 'km') {
+                $raw = $_POST['distance'] ?? '';
+                if (!is_string($raw) || !is_numeric($raw) || (float)$raw <= 0 || (float)$raw > 100000) {
+                    throw new DomainException('Enter a valid trip distance between 0.1 and 100,000 km.');
+                }
+                $distance = round((float)$raw, 1);
+                $base = round((float)$b['fare'] * $distance, 2);
+            } elseif ($b['charge_type'] === 'days') {
+                $base = round((float)$b['fare'] * $days, 2);
+            } else {
+                throw new DomainException('The saved fare type is invalid. Contact support.');
+            }
+            $today = date('Y-m-d');
+            $lateDays = max(0, (int)(new DateTimeImmutable((string)$b['rent_end_date']))->diff(new DateTimeImmutable($today))->format('%r%a'));
+            $lateFee = round($lateDays * 200, 2);
+            $total = round($base + $lateFee, 2);
+            db_exec(
+                "UPDATE rentedcars SET car_return_date = ?, return_status = 'R', booking_status = 'completed',
+                 payment_status = 'unpaid', no_of_days = ?, distance = ?, late_fee = ?, total_amount = ?
+                 WHERE id = ? AND customer_username = ? AND return_status = 'NR'",
+                [$today, $days, $distance, $lateFee, $total, $id, $user['id']]
+            );
+        });
+        flash('success', 'Rental returned. Your final invoice is ready.');
+        redirect(url('printbill.php?id=' . $id));
+    } catch (DomainException $e) {
+        flash('warning', $e->getMessage());
+        redirect(url('prereturncar.php'));
+    } catch (Throwable $e) {
+        error_log((string)$e);
+        flash('error', 'We could not complete the return. Please try again or contact support.');
+        redirect(url('prereturncar.php'));
     }
 }
 
-function dateDiff($start, $end) {
-    $start_ts = strtotime($start);
-    $end_ts = strtotime($end);
-    $diff = $end_ts - $start_ts;
-    return round($diff / 86400);
+$b = db_one(
+    "SELECT r.id, r.customer_username, r.rent_start_date, r.rent_end_date, r.car_return_date, r.fare, r.charge_type,
+            r.booking_status, r.return_status, r.no_of_days, r.distance, r.late_fee, r.total_amount, r.payment_status,
+            c.car_name, c.car_nameplate, d.driver_name
+     FROM rentedcars r JOIN cars c ON c.car_id = r.car_id JOIN driver d ON d.driver_id = r.driver_id
+     WHERE r.id = ? AND r.customer_username = ? LIMIT 1",
+    [$id, $user['id']]
+);
+if (!$b) { http_response_code(404); exit('Invoice not found.'); }
+if ($b['return_status'] !== 'R' || $b['booking_status'] !== 'completed' || $b['total_amount'] === null) {
+    flash('info', 'Submit your trip details to calculate the final invoice.');
+    redirect(url('returncar.php?id=' . $id));
 }
-
-$extra_days = dateDiff("$rent_end_date", "$car_return_date");
-$total_fine = $extra_days*200;
-
-$duration = dateDiff("$rent_start_date","$rent_end_date");
-
-if($extra_days>0) {
-    $total_amount = $total_amount + $total_fine;  
-}
-
-if($charge_type == "days"){
-    $no_of_days = $distance_or_days;
-    $sql1 = "UPDATE rentedcars SET car_return_date='$car_return_date', no_of_days='$no_of_days', total_amount='$total_amount', return_status='$return_status' WHERE id = '$id' ";
-} else {
-    $distance = $distance_or_days;
-    $sql1 = "UPDATE rentedcars SET car_return_date='$car_return_date', distance='$distance', no_of_days='$duration', total_amount='$total_amount', return_status='$return_status' WHERE id = '$id' ";
-}
-
-$result1 = $conn->query($sql1);
-
-if ($result1){
-     $sql2 = "UPDATE cars c, driver d, rentedcars rc SET c.car_availability='yes', d.driver_availability='yes' 
-     WHERE rc.car_id=c.car_id AND rc.driver_id=d.driver_id AND rc.customer_username = '$login_customer' AND rc.id = '$id'";
-     $result2 = $conn->query($sql2);
-}
-else {
-    echo $conn->error;
-}
+render_header('Invoice ' . invoice_no((int)$b['id']), 'history');
 ?>
-
-    <div class="container">
-        <div class="jumbotron">
-            <h1 class="text-center" style="color: green;"><span class="glyphicon glyphicon-ok-circle"></span> Car Returned</h1>
-        </div>
+<div class="container py-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+    <div><div class="text-success small fw-semibold"><i class="fa-solid fa-circle-check me-1"></i>Rental returned</div><h1 class="h3 fw-bold mb-1">Final invoice</h1><p class="text-muted mb-0">Reference <?= e(invoice_no((int)$b['id'])) ?></p></div>
+    <div class="d-flex gap-2"><button class="btn btn-outline-secondary" type="button" onclick="window.print()"><i class="fa-solid fa-print me-2"></i>Print invoice</button><a class="btn btn-brand" href="<?= e(url('mybookings.php')) ?>">My bookings</a></div>
+  </div>
+  <article class="card border-0 shadow-sm invoice-paper"><div class="card-body p-4 p-md-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 border-bottom pb-4 mb-4">
+      <div><div class="text-muted small">BILLED BY</div><h2 class="h4 fw-bold mb-1"><?= e((string)config('APP_NAME','DriveEase')) ?></h2><div class="text-muted">Car rental service</div></div>
+      <div class="text-md-end"><div class="text-muted small">INVOICE NUMBER</div><div class="h5 fw-bold"><?= e(invoice_no((int)$b['id'])) ?></div><div class="text-muted small">Issued <?= e($b['car_return_date']) ?></div></div>
     </div>
-    <br>
-
-    <h2 class="text-center"> Thank you for visiting Patna Car Rental! We wish you have a safe ride. </h2>
-
-    <h3 class="text-center"> <strong>Your Order Number:</strong> <span style="color: blue;"><?php echo "$id"; ?></span> </h3>
-
-
-    <div class="container">
-        <h5 class="text-center">Please read the following information about your order.</h5>
-        <div class="box">
-            <div class="col-md-10" style="float: none; margin: 0 auto; text-align: center;">
-                <h3 style="color: orange;">Your booking has been received and placed into out order processing system.</h3>
-                <br>
-                <h4>Please make a note of your <strong>order number</strong> now and keep in the event you need to communicate with us about your order.</h4>
-                <br>
-                <h3 style="color: orange;">Invoice</h3>
-                <br>
-            </div>
-            <div class="col-md-10" style="float: none; margin: 0 auto; ">
-                <h4> <strong>Vehicle Name: </strong> <?php echo $car_name;?></h4>
-                <br>
-                <h4> <strong>Vehicle Number:</strong> <?php echo $car_nameplate; ?></h4>
-                <br>
-                <h4> <strong>Fare:&nbsp;</strong>  ₹<?php 
-            if($charge_type == "days"){
-                    echo ($fare . "/day");
-                } else {
-                    echo ($fare . "/km");
-                }
-            ?></h4>
-                <br>
-                <h4> <strong>Booking Date: </strong> <?php echo date("Y-m-d"); ?> </h4>
-                <br>
-                <h4> <strong>Start Date: </strong> <?php echo $rent_start_date; ?></h4>
-                <br>
-                <h4> <strong>Rent End Date: </strong> <?php echo $rent_end_date; ?></h4>
-                <br>
-                <h4> <strong>Car Return Date: </strong> <?php echo $car_return_date; ?> </h4>
-                <br>
-                <?php if($charge_type == "days"){?>
-                    <h4> <strong>Number of days:</strong> <?php echo $distance_or_days; ?>day(s)</h4>
-                <?php } else { ?>
-                    <h4> <strong>Distance Travelled:</strong> <?php echo $distance_or_days; ?>km(s)</h4>
-                <?php } ?>
-                <br>
-                <?php
-                    if($extra_days > 0){
-                        
-                ?>
-                <h4> <strong>Total Fine:</strong> <label class="text-danger"> ₹<?php echo $total_fine; ?>/- </label> for <?php echo $extra_days;?> extra days.</h4>
-                <br>
-                <?php } ?>
-                <h4> <strong>Total Amount: </strong> ₹<?php echo $total_amount; ?>/-     </h4>
-                <br>
-            </div>
-        </div>
-        <div class="col-md-12" style="float: none; margin: 0 auto; text-align: center;">
-            <h6>Warning! <strong>Do not reload this page</strong> or the above display will be lost. If you want a hardcopy of this page, please print it now.</h6>
-        </div>
+    <h3 class="h5 fw-bold"><?= e($b['car_name']) ?> <span class="text-muted fw-normal">· <?= e($b['car_nameplate']) ?></span></h3>
+    <div class="row g-3 mt-2 mb-4">
+      <div class="col-6 col-md-3"><div class="small text-muted">Pickup date</div><strong><?= e($b['rent_start_date']) ?></strong></div>
+      <div class="col-6 col-md-3"><div class="small text-muted">Scheduled return</div><strong><?= e($b['rent_end_date']) ?></strong></div>
+      <div class="col-6 col-md-3"><div class="small text-muted">Actual return</div><strong><?= e($b['car_return_date']) ?></strong></div>
+      <div class="col-6 col-md-3"><div class="small text-muted">Driver</div><strong><?= e($b['driver_name']) ?></strong></div>
     </div>
-
-</body>
-<footer class="site-footer">
-        <div class="container">
-            <hr>
-            <div class="row">
-                <div class="col-sm-6">
-                    <h5>© 2018 Patna Car Rental</h5>
-                </div>
-            </div>
-        </div>
-    </footer>
-</html>
+    <div class="table-responsive"><table class="table align-middle">
+      <thead><tr><th>Description</th><th class="text-end">Calculation</th><th class="text-end">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Rental charges</td><td class="text-end"><?= e($b['charge_type']==='days' ? (string)$b['no_of_days'].' day(s) × '.money($b['fare']) : (string)$b['distance'].' km × '.money($b['fare'])) ?></td><td class="text-end"><?= e(money((float)$b['total_amount']-(float)$b['late_fee'])) ?></td></tr>
+        <?php if ((float)$b['late_fee'] > 0): ?><tr><td>Late return fee</td><td class="text-end">₹200 × <?= e((string)((float)$b['late_fee']/200)) ?> day(s)</td><td class="text-end"><?= e(money($b['late_fee'])) ?></td></tr><?php endif; ?>
+      </tbody>
+      <tfoot><tr><th colspan="2" class="text-end">Total due</th><th class="text-end fs-5"><?= e(money($b['total_amount'])) ?></th></tr></tfoot>
+    </table></div>
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mt-3"><div class="text-muted small">Payment status: <strong><?= e(ucfirst((string)$b['payment_status'])) ?></strong></div><div class="text-muted small">This invoice reflects the saved booking fare and recorded trip details.</div></div>
+  </div></article>
+</div>
+<style>@media print { nav, footer, .btn, a { display:none!important } body { background:#fff!important } .invoice-paper { box-shadow:none!important; border:1px solid #ddd!important } .container { max-width:100%!important; width:100%!important } }</style>
+<?php render_footer();
