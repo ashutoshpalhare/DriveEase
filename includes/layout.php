@@ -100,7 +100,3 @@ function field_error(array $errors, string $field): string
     return isset($errors[$field]) ? '<div class="invalid-feedback d-block">' . e($errors[$field]) . '</div>' : '';
 }
 
-function car_image(?string $path): string
-{
-    return $path ? url($path) : asset('img/bg-2.jpg');
-}
