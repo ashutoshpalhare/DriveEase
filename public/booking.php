@@ -1,265 +1,120 @@
-<!DOCTYPE html>
-<html>
-<?php 
- include('session_customer.php');
-if(!isset($_SESSION['login_customer'])){
-    session_destroy();
-    header("location: customerlogin.php");
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/layout.php';
+require_once __DIR__ . '/../includes/cars.php';
+
+$user = require_role('customer');
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 0;
+$car = $id > 0 ? car_find($id) : null;
+
+if (!$car) {
+    http_response_code(404);
+    render_header('Car not found', 'cars');
+    echo '<div class="container py-5 text-center"><h1 class="h3">Car not found</h1><a class="btn btn-brand mt-3" href="' . e(url('cars.php')) . '">Browse cars</a></div>';
+    render_footer();
+    exit;
 }
-?> 
-<title>Book Car </title>
-<head>
-    <script type="text/javascript" src="assets/ajs/angular.min.js"> </script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-<link rel="shortcut icon" type="image/png" href="assets/img/P.png.png">
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
-    <link rel="stylesheet" href="assets/w3css/w3.css">
-  <script type="text/javascript" src="assets/js/jquery.min.js"></script>
-  <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>  
-  <script type="text/javascript" src="assets/js/custom.js"></script> 
- <link rel="stylesheet" type="text/css" media="screen" href="assets/css/clientpage.css" />
-</head>
-<body ng-app=""> 
 
+$today = date('Y-m-d');
+$startInput = (string) ($_GET['start'] ?? $today);
+$endInput = (string) ($_GET['end'] ?? $today);
+[$dateError, $start, $end] = validate_date_range($startInput, $endInput);
+if ($dateError) {
+    $start = $end = $today;
+}
 
-      <!-- Navigation -->
-     <!-- Navigation -->
-     <nav class="navbar navbar-custom navbar-fixed-top" role="navigation" style="color: black">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
-                    <i class="fa fa-bars"></i>
-                    </button>
-                <a class="navbar-brand page-scroll" href="index.php">
-                   PATNA CAR RENTAL </a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
+$drivers = db_all(
+    "SELECT d.driver_id, d.driver_name, d.driver_phone, d.driver_gender
+     FROM driver d
+     JOIN clientcars cc ON cc.client_username = d.client_username
+     WHERE cc.car_id = ? AND d.driver_availability = 'yes' AND d.is_active = 1
+       AND NOT EXISTS (
+         SELECT 1 FROM rentedcars r
+         WHERE r.driver_id = d.driver_id
+           AND r.booking_status IN " . BLOCKING_STATUSES . "
+           AND r.rent_start_date <= ? AND r.rent_end_date >= ?
+       )
+     ORDER BY d.driver_name",
+    [$id, $end, $start]
+);
 
-            <?php
-                if(isset($_SESSION['login_client'])){
-            ?> 
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_client']; ?></a>
-                    </li>
-                    <li>
-                    <ul class="nav navbar-nav navbar-right">
-            <li><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> Control Panel <span class="caret"></span> </a>
-                <ul class="dropdown-menu">
-              <li> <a href="entercar.php">Add Car</a></li>
-              <li> <a href="enterdriver.php"> Add Driver</a></li>
-              <li> <a href="clientview.php">View</a></li>
-
-            </ul>
-            </li>
-          </ul>
-                    </li>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-            
-            <?php
-                }
-                else if (isset($_SESSION['login_customer'])){
-            ?>
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_customer']; ?></a>
-                    </li>
-                    <ul class="nav navbar-nav">
-            <li><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Garagge <span class="caret"></span> </a>
-                <ul class="dropdown-menu">
-              <li> <a href="prereturncar.php">Return Now</a></li>
-              <li> <a href="mybookings.php"> My Bookings</a></li>
-            </ul>
-            </li>
-          </ul>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-
-            <?php
-            }
-                else {
-            ?>
-
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="clientlogin.php">Client</a>
-                    </li>
-                    <li>
-                        <a href="customerlogin.php">Customer</a>
-                    </li>
-                    <li>
-                        <a href="#"> FAQ </a>
-                    </li>
-                </ul>
-            </div>
-                <?php   }
-                ?>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-    
-<div class="container" style="margin-top: 65px;" >
-    <div class="col-md-7" style="float: none; margin: 0 auto;">
-      <div class="form-area">
-        <form role="form" action="bookingconfirm.php" method="POST">
-        <br style="clear: both">
-          <h2 style="margin-bottom: 25px; text-align: center; font-size: 30px;"> Rent your dream car here </h2><br>
-
-        <?php
-        $car_id = $_GET["id"];
-        $sql1 = "SELECT * FROM cars WHERE car_id = '$car_id'";
-        $result1 = mysqli_query($conn, $sql1);
-
-        if(mysqli_num_rows($result1)){
-            while($row1 = mysqli_fetch_assoc($result1)){
-                $car_name = $row1["car_name"];
-                $car_nameplate = $row1["car_nameplate"];
-                $ac_price = $row1["ac_price"];
-                $non_ac_price = $row1["non_ac_price"];
-                $ac_price_per_day = $row1["ac_price_per_day"];
-                $non_ac_price_per_day = $row1["non_ac_price_per_day"];
-            }
-        }
-
-        ?>
-
-          <!-- <div class="form-group"> -->
-              <h5> Car:&nbsp;  <?php echo($car_name);?></h5>
-         <!-- </div> -->
-         
-          <!-- <div class="form-group"> -->
-            <h5> Vehicle Number:&nbsp; <?php echo($car_nameplate);?></h5>
-          <!-- </div>      -->
-        <!-- <div class="form-group"> -->
-        <?php $today = date("Y-m-d") ?>
-          <label><h5>Start Date:</h5></label>
-            <input type="date" name="rent_start_date" min="<?php echo($today);?>" required="">
-            &nbsp;
-          <label><h5>End Date:</h5></label>
-          <input type="date" name="rent_end_date" min="<?php echo($today);?>" required="">
-        <!-- </div>      -->
-        
-        <h5> Choose your car type:  &nbsp;
-            <input onclick="reveal()" type="radio" name="radio" value="ac" ng-model="myVar"> AC &nbsp;
-            <input onclick="reveal()" type="radio" name="radio" value="non_ac" ng-model="myVar"> Non-AC
-                
-        
-        <div ng-switch="myVar"> 
-        <div ng-switch-default>
-                    <!-- <div class="form-group"> -->
-                <h5>Fare: <h5>    
-                <!-- </div>    -->
-                     </div>
-                    <div ng-switch-when="ac">
-                    <!-- <div class="form-group"> -->
-                <h5>Fare: <?php echo("₹" . $ac_price . "/km and ₹" . $ac_price_per_day . "/day");?><h5>    
-                <!-- </div>    -->
-                     </div>
-                     <div ng-switch-when="non_ac">
-                     <!-- <div class="form-group"> -->
-                <h5>Fare: <?php echo("₹" . $non_ac_price . "/km and ₹" . $non_ac_price_per_day . "/day");?><h5>    
-                <!-- </div>   -->
-                     </div>
-        </div>
-
-         <h5> Choose charge type:  &nbsp;
-            <input onclick="reveal()" type="radio" name="radio1" value="km"> per km(s) &nbsp;
-            <input onclick="reveal()" type="radio" name="radio1" value="days"> per day(s)
-
-            <br><br>
-                <!-- <form class="form-group"> -->
-                Choose a driver: &nbsp;
-                <select name="driver_id_from_dropdown" ng-model="myVar1">
-                        <?php
-                        $sql2 = "SELECT * FROM driver d WHERE d.driver_availability = 'yes' AND d.client_username IN (SELECT cc.client_username FROM clientcars cc WHERE cc.car_id = '$car_id')";
-                        $result2 = mysqli_query($conn, $sql2);
-
-                        if(mysqli_num_rows($result2) > 0){
-                            while($row2 = mysqli_fetch_assoc($result2)){
-                                $driver_id = $row2["driver_id"];
-                                $driver_name = $row2["driver_name"];
-                                $driver_gender = $row2["driver_gender"];
-                                $driver_phone = $row2["driver_phone"];
-                    ?>
-  
-
-                    <option value="<?php echo($driver_id); ?>"><?php echo($driver_name); ?>
-                   
-
-                    <?php }} 
-                    else{
-                        ?>
-                    Sorry! No Drivers are currently available, try again later...
-                        <?php
-                    }
-                    ?>
+render_header('Book ' . $car['car_name'], 'cars');
+?>
+<div class="container py-4">
+  <nav aria-label="breadcrumb"><ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="<?= e(url('cars.php')) ?>">Cars</a></li>
+    <li class="breadcrumb-item"><a href="<?= e(url('car.php?id=' . $id)) ?>"><?= e($car['car_name']) ?></a></li>
+    <li class="breadcrumb-item active" aria-current="page">Book</li>
+  </ol></nav>
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h3 fw-bold mb-1">Complete your booking</h1>
+          <p class="text-muted mb-4">Choose your dates, fare type and an available driver.</p>
+          <?php if ($dateError): ?><div class="alert alert-warning"><?= e($dateError) ?> Dates have been reset to today; please select your dates again.</div><?php endif; ?>
+          <form method="post" action="<?= e(url('bookingconfirm.php')) ?>" data-once>
+            <?= csrf_field() ?>
+            <input type="hidden" name="car_id" value="<?= $id ?>">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label" for="rent_start_date">Pickup date</label>
+                <input class="form-control" type="date" id="rent_start_date" name="rent_start_date" min="<?= e($today) ?>" value="<?= e($start) ?>" data-date-start="#rent_end_date" required>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="rent_end_date">Return date</label>
+                <input class="form-control" type="date" id="rent_end_date" name="rent_end_date" min="<?= e($start) ?>" value="<?= e($end) ?>" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label d-block">Comfort preference</label>
+                <div class="d-flex flex-wrap gap-3">
+                  <div class="form-check"><input class="form-check-input" type="radio" name="ac_type" id="ac" value="ac" checked required><label class="form-check-label" for="ac">AC</label></div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="ac_type" id="non_ac" value="non_ac" required><label class="form-check-label" for="non_ac">Non-AC</label></div>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label d-block">Fare calculation</label>
+                <div class="d-flex flex-wrap gap-3">
+                  <div class="form-check"><input class="form-check-input" type="radio" name="charge_type" id="days" value="days" checked required><label class="form-check-label" for="days">Per day</label></div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="charge_type" id="km" value="km" required><label class="form-check-label" for="km">Per kilometre</label></div>
+                </div>
+                <div class="form-text">Per-kilometre bookings are billed using the actual distance recorded on return.</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="driver_id">Driver</label>
+                <select class="form-select" id="driver_id" name="driver_id" required <?= $drivers ? '' : 'disabled' ?>>
+                  <option value="">Select an available driver</option>
+                  <?php foreach ($drivers as $driver): ?>
+                    <option value="<?= (int) $driver['driver_id'] ?>"><?= e($driver['driver_name']) ?> · <?= e($driver['driver_phone']) ?></option>
+                  <?php endforeach; ?>
                 </select>
-                <!-- </form> -->
-                <div ng-switch="myVar1">
-                
-
-                <?php
-                        $sql3 = "SELECT * FROM driver d WHERE d.driver_availability = 'yes' AND d.client_username IN (SELECT cc.client_username FROM clientcars cc WHERE cc.car_id = '$car_id')";
-                        $result3 = mysqli_query($conn, $sql3);
-
-                        if(mysqli_num_rows($result3) > 0){
-                            while($row3 = mysqli_fetch_assoc($result3)){
-                                $driver_id = $row3["driver_id"];
-                                $driver_name = $row3["driver_name"];
-                                $driver_gender = $row3["driver_gender"];
-                                $driver_phone = $row3["driver_phone"];
-
-                ?>
-
-                <div ng-switch-when="<?php echo($driver_id); ?>">
-                    <h5>Driver Name:&nbsp; <?php echo($driver_name); ?></h5>
-                    <p>Gender:&nbsp; <?php echo($driver_gender); ?> </p>
-                    <p>Contact:&nbsp; <?php echo($driver_phone); ?> </p>
-                </div>
-                <?php }} ?>
-                </div>
-                <input type="hidden" name="hidden_carid" value="<?php echo $car_id; ?>">
-                
-         
-           <input type="submit"name="submit" value="Book Now" class="btn btn-success pull-right">     
-        </form>
-        
-      </div>
-      <div class="col-md-12" style="float: none; margin: 0 auto; text-align: center;">
-            <h6><strong>Kindly Note:</strong> You will be charged <span class="text-danger">₹200/-</span> for each day after the due date.</h6>
-        </div>
-    </div>
-
-</body>
-<footer class="site-footer">
-        <div class="container">
-            <hr>
-            <div class="row">
-                <div class="col-sm-6">
-                    <h5>© 2018 Patna Car Rental</h5>
-                </div>
+                <?php if (!$drivers): ?><div class="form-text text-danger">No driver is currently available for these dates. Try another date or contact the fleet owner.</div><?php endif; ?>
+              </div>
+              <div class="col-12 d-grid mt-2">
+                <button class="btn btn-warning btn-lg fw-semibold" type="submit" <?= $drivers ? '' : 'disabled' ?>><i class="fa-solid fa-calendar-check me-2"></i>Confirm booking</button>
+              </div>
             </div>
+          </form>
         </div>
-    </footer>
-</html>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm overflow-hidden">
+        <img src="<?= e(car_image($car['car_img'])) ?>" alt="<?= e($car['car_name']) ?>" class="detail-img rounded-0">
+        <div class="card-body">
+          <span class="badge text-bg-light border mb-2"><?= e($car['category']) ?></span>
+          <h2 class="h4 fw-bold"><?= e($car['car_name']) ?></h2>
+          <p class="small text-muted"><?= (int) $car['seats'] ?> seats · <?= e($car['fuel_type']) ?> · <?= e($car['transmission']) ?></p>
+          <div class="d-flex justify-content-between py-2 border-top"><span>AC · per day</span><strong><?= e(money($car['ac_price_per_day'])) ?></strong></div>
+          <div class="d-flex justify-content-between py-2 border-top"><span>Non-AC · per day</span><strong><?= e(money($car['non_ac_price_per_day'])) ?></strong></div>
+          <div class="d-flex justify-content-between py-2 border-top"><span>AC · per km</span><strong><?= e(money($car['ac_price'])) ?></strong></div>
+          <div class="d-flex justify-content-between py-2 border-top"><span>Non-AC · per km</span><strong><?= e(money($car['non_ac_price'])) ?></strong></div>
+          <p class="small text-muted mt-3 mb-0">Your selection and estimated charges are checked again on the server before a booking is saved.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<?php render_footer();
