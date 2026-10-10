@@ -1,196 +1,43 @@
-<!DOCTYPE html>
-<html>
-<?php 
-session_start(); 
-require 'connection.php';
-$conn = Connect();
-?>
-<head>
-<link rel="shortcut icon" type="image/png" href="assets/img/P.png.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-<link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
-    <link rel="stylesheet" href="assets/w3css/w3.css">
-<link rel="stylesheet" type="text/css" href="assets/css/customerlogin.css">
-<script type="text/javascript" src="assets/js/jquery.min.js"></script>
-<script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
-<link rel="stylesheet" type="text/css" media="screen" href="assets/css/clientpage.css" />
-</head>
-<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
-<!-- Navigation -->
-    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation" style="color: black">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
-                    <i class="fa fa-bars"></i>
-                    </button>
-                <a class="navbar-brand page-scroll" href="index.php">
-                   PATNA CAR RENTAL </a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-
-            <?php
-                if(isset($_SESSION['login_client'])){
-            ?> 
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_client']; ?></a>
-                    </li>
-                    <li>
-                    <ul class="nav navbar-nav navbar-right">
-            <li><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> Control Panel <span class="caret"></span> </a>
-                <ul class="dropdown-menu">
-              <li> <a href="entercar.php">Add Car</a></li>
-              <li> <a href="enterdriver.php"> Add Driver</a></li>
-              <li> <a href="clientview.php">View</a></li>
-
-            </ul>
-            </li>
-          </ul>
-                    </li>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-            
-            <?php
-                }
-                else if (isset($_SESSION['login_customer'])){
-            ?>
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_customer']; ?></a>
-                    </li>
-                    <ul class="nav navbar-nav">
-            <li><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Garagge <span class="caret"></span> </a>
-                <ul class="dropdown-menu">
-              <li> <a href="returncar.php">Return Now</a></li>
-              <li> <a href="mybookings.php"> My Bookings</a></li>
-            </ul>
-            </li>
-          </ul>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-
-            <?php
-            }
-                else {
-            ?>
-
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="clientlogin.php">Client</a>
-                    </li>
-                    <li>
-                        <a href="customerlogin.php">Customer</a>
-                    </li>
-                    <li>
-                        <a href="#"> FAQ </a>
-                    </li>
-                </ul>
-            </div>
-                <?php   }
-                ?>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
 <?php
-function dateDiff($start, $end) {
-    $start_ts = strtotime($start);
-    $end_ts = strtotime($end);
-    $diff = $end_ts - $start_ts;
-    return round($diff / 86400);
-}
- $id = $_GET["id"];
- $sql1 = "SELECT c.car_name, c.car_nameplate, rc.rent_start_date, rc.rent_end_date, rc.fare, rc.charge_type, d.driver_name, d.driver_phone
- FROM rentedcars rc, cars c, driver d
- WHERE id = '$id' AND c.car_id=rc.car_id AND d.driver_id = rc.driver_id";
- $result1 = $conn->query($sql1);
- if (mysqli_num_rows($result1) > 0) {
-    while($row = mysqli_fetch_assoc($result1)) {
-        $car_name = $row["car_name"];
-        $car_nameplate = $row["car_nameplate"];
-        $driver_name = $row["driver_name"];
-        $driver_phone = $row["driver_phone"];
-        $rent_start_date = $row["rent_start_date"];
-        $rent_end_date = $row["rent_end_date"];
-        $fare = $row["fare"];
-        $charge_type = $row["charge_type"];
-        $no_of_days = dateDiff("$rent_start_date", "$rent_end_date");
-    }
-}
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/layout.php';
+$user = require_role('customer');
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!$id || $id < 1) { http_response_code(400); exit('Invalid booking reference.'); }
+$b = db_one("SELECT r.id,r.customer_username,r.rent_start_date,r.rent_end_date,r.fare,r.charge_type,r.booking_status,r.return_status,c.car_name,c.car_nameplate,d.driver_name,d.driver_phone FROM rentedcars r JOIN cars c ON c.car_id=r.car_id JOIN driver d ON d.driver_id=r.driver_id WHERE r.id=? AND r.customer_username=? LIMIT 1", [$id,$user['id']]);
+if (!$b) { http_response_code(404); exit('Booking not found.'); }
+if ($b['return_status'] !== 'NR' || !in_array($b['booking_status'], ['confirmed','active'], true)) { flash('info','This booking has already been returned or is not eligible for return.'); redirect(url('mybookings.php')); }
+$days = rental_days((string)$b['rent_start_date'], (string)$b['rent_end_date']);
+render_header('Return rental','trips');
 ?>
-    <div class="container" style="margin-top: 65px;" >
-    <div class="col-md-7" style="float: none; margin: 0 auto;">
-      <div class="form-area">
-        <form role="form" action="printbill.php?id=<?php echo $id ?>" method="POST">
-        <br style="clear: both">
-          <h3 style="margin-bottom: 5px; text-align: center; font-size: 30px;"> Journey Details </h3>
-          <h6 style="margin-bottom: 25px; text-align: center; font-size: 12px;"> Allow your driver to fill the below form </h6>
-
-           <h5> Car:&nbsp;  <?php echo($car_name);?></h5>
-
-           <h5> Vehicle Number:&nbsp;  <?php echo($car_nameplate);?></h5>
-
-           <h5> Rent date:&nbsp;  <?php echo($rent_start_date);?></h5>
-
-           <h5> End Date:&nbsp;  <?php echo($rent_end_date);?></h5>
-
-           <h5> Fare:&nbsp;  ₹<?php 
-            if($charge_type == "days"){
-                    echo ($fare . "/day");
-                } else {
-                    echo ($fare . "/km");
-                }
-            ?>
-            </h5>
-
-           <h5> Driver Name:&nbsp;  <?php echo($driver_name);?></h5>
-
-           <h5> Driver Contact:&nbsp;  <?php echo($driver_phone);?></h5>
-          <?php if($charge_type == "km") { ?>
-          <div class="form-group">
-            <input type="text" class="form-control" id="distance_or_days" name="distance_or_days" placeholder="Enter the distance travelled (in km)" required="" autofocus>
-          </div>
-          <?php }  else { ?>
-            <h5> Number of Day(s):&nbsp;  <?php echo($no_of_days);?></h5>
-            <input type="hidden" name="distance_or_days" value="<?php echo $no_of_days; ?>">
-          <?php } ?>
-          <input type="hidden" name="hid_fare" value="<?php echo $fare; ?>">
-
-           <input type="submit" name="submit" value="submit" class="btn btn-success pull-right">    
-        </form>
+<div class="container py-4">
+  <a class="small text-decoration-none" href="<?= e(url('prereturncar.php')) ?>"><i class="fa-solid fa-arrow-left me-1"></i>Back to active rentals</a>
+  <h1 class="h3 fw-bold mt-2">Return rental</h1>
+  <div class="row g-4 mt-1">
+    <div class="col-lg-7"><section class="card border-0 shadow-sm"><div class="card-body p-4">
+      <div class="small text-muted"><?= e(invoice_no((int)$b['id'])) ?></div><h2 class="h5 fw-bold mt-1"><?= e($b['car_name']) ?> · <?= e($b['car_nameplate']) ?></h2>
+      <div class="row g-3 mt-2">
+        <div class="col-6"><div class="small text-muted">Pickup</div><strong><?= e($b['rent_start_date']) ?></strong></div>
+        <div class="col-6"><div class="small text-muted">Scheduled return</div><strong><?= e($b['rent_end_date']) ?></strong></div>
+        <div class="col-6"><div class="small text-muted">Driver</div><strong><?= e($b['driver_name']) ?></strong></div>
+        <div class="col-6"><div class="small text-muted">Contact</div><strong><?= e($b['driver_phone']) ?></strong></div>
+        <div class="col-12"><div class="small text-muted">Agreed fare</div><strong class="fs-5"><?= e(money($b['fare'])) ?> / <?= e($b['charge_type']==='days'?'day':'km') ?></strong></div>
       </div>
-    </div>
-   
-    </div>
-
-</body>
-<footer class="site-footer">
-        <div class="container">
-            <hr>
-            <div class="row">
-                <div class="col-sm-6">
-                    <h5>© 2018 Patna Car Rental</h5>
-                </div>
-            </div>
-        </div>
-    </footer>
-</html>
+    </div></section></div>
+    <div class="col-lg-5"><section class="card border-0 shadow-sm"><div class="card-body p-4">
+      <h2 class="h5 fw-bold">Trip completion</h2><p class="small text-muted">The final amount is calculated using the saved booking fare.</p>
+      <form action="<?= e(url('printbill.php?id='.(int)$b['id'])) ?>" method="post"><?= csrf_field() ?>
+        <?php if ($b['charge_type']==='km'): ?>
+          <label class="form-label fw-semibold" for="distance">Distance travelled (km)</label>
+          <input class="form-control mb-3" id="distance" name="distance" type="number" min="0.1" max="100000" step="0.1" inputmode="decimal" required>
+        <?php else: ?>
+          <div class="p-3 rounded bg-body-tertiary mb-3"><div class="small text-muted">Billable rental days</div><div class="fs-4 fw-bold"><?= $days ?></div></div>
+        <?php endif; ?>
+        <div class="alert alert-info small">A late-return fee of ₹200 per day may apply after the scheduled return date.</div>
+        <button class="btn btn-brand w-100" type="submit"><i class="fa-solid fa-file-invoice me-2"></i>Calculate final invoice</button>
+      </form>
+    </div></section></div>
+  </div>
+</div>
+<?php render_footer();
