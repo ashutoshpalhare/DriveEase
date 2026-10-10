@@ -12,7 +12,7 @@ body { background: #f6f8fb; }
 .navbar .nav-link.active { color: var(--de-accent) !important; font-weight: 600; }
 
 .hero {
-  background: linear-gradient(135deg, rgba(10,43,67,.92), rgba(15,61,94,.78)), url("../img/bg-2.jpg") center/cover;
+  background: linear-gradient(135deg, rgba(10,43,67,.88), rgba(15,61,94,.68)), url("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2000&q=85") center/cover;
   color: #fff; padding: 4.5rem 0 6.5rem;
 }
 .hero h1 { font-weight: 800; letter-spacing: -.5px; }
@@ -24,12 +24,12 @@ body { background: #f6f8fb; }
 
 .car-card { border: 0; border-radius: 1rem; overflow: hidden; transition: transform .15s, box-shadow .15s; }
 .car-card:hover { transform: translateY(-3px); box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.12); }
-.car-card .car-img { height: 190px; object-fit: contain; background: #fff; padding: .75rem; width: 100%; }
+.car-card .car-img { height: 190px; object-fit: cover; background: #edf1f5; width: 100%; }
 .car-card .badge-status { position: absolute; top: .75rem; right: .75rem; }
 .spec { font-size: .85rem; color: #6c757d; }
 .price { font-size: 1.35rem; font-weight: 700; color: var(--de-brand); }
 .step-num { width: 44px; height: 44px; border-radius: 50%; background: var(--de-accent); color: #222; font-weight: 700; display: grid; place-items: center; }
 .auth-card { max-width: 520px; margin: 2.5rem auto; border: 0; border-radius: 1rem; box-shadow: 0 .75rem 2rem rgba(10,43,67,.12); }
-.detail-img { background: #fff; border-radius: 1rem; padding: 1rem; max-height: 380px; width: 100%; object-fit: contain; }
+.detail-img { background: #edf1f5; border-radius: 1rem; max-height: 420px; width: 100%; object-fit: cover; }
 @media (max-width: 575.98px) { .hero { padding: 3rem 0 5.5rem; } .hero h1 { font-size: 1.9rem; } }
 .hero-sub { opacity: .92; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
