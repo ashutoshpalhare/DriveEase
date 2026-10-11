@@ -129,7 +129,7 @@ render_header('Rentals & payments', 'rentals');
               <input class="form-control form-control-sm" name="reference" maxlength="80" placeholder="Transaction reference (optional)" aria-label="Transaction reference">
               <button class="btn btn-sm btn-brand" type="submit"><i class="fa-solid fa-plus me-1"></i>Record payment</button>
             </form>
-          <?php elseif ($due===0.0): ?><span class="small text-success"><i class="fa-solid fa-circle-check me-1"></i>Fully paid</span><?php else: ?><span class="small text-muted">Available after return</span><?php endif; ?></td>
+          <?php elseif ($due !== null && $due <= 0): ?><span class="small text-success"><i class="fa-solid fa-circle-check me-1"></i>Fully paid</span><?php else: ?><span class="small text-muted">Available after return</span><?php endif; ?></td>
         </tr>
       <?php endforeach; ?>
       </tbody></table></div><?php endif; ?>
