@@ -58,11 +58,11 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 | 2 | Secure foundation: config, prepared-statement DB layer, sessions, CSRF, validation, role auth, additive DB migration | ✅ Done |
 | 3 | `public/` web root, Bootstrap 5 UI, homepage, car search/filter/details, availability checking, unified login and registration | ✅ Done |
 | 4 | Booking: date/time selection, server-side fare calculation, driver assignment, transactional availability check, statuses, cancellation | ⏳ Next |
-| 5 | Vehicle, driver and customer management; customer and admin dashboards | ⏳ Planned |
-| 6 | Payment-status management, invoices/receipts, booking/customer/vehicle/revenue reports | ⏳ Planned |
-| 7 | Remove obsolete libraries and legacy code, final hardening, end-to-end pass | ⏳ Planned |
+| 5 | Vehicle/driver legacy management, customer history, fleet rental ledger | 🟡 Partially implemented |
+| 6 | Return flow, final invoices, partial/full payment ledger | 🟡 Core flow implemented; reports/refunds pending |
+| 7 | Security audit, remove obsolete libraries/legacy code, full end-to-end regression pass | ⏳ Next |
 
-> **Important:** until Phases 4–6 are finished, the booking, return, billing, history, fleet and driver pages are still the **original legacy pages**. They work, and they are protected by the new login, but they have not yet been rewritten and still contain the original weaknesses (raw SQL, no CSRF, no ownership checks). See [Security → Known gaps](#known-gaps-until-phases-46-land). Do not expose this build to the public internet until they are replaced.
+**Current status:** booking, booking confirmation, return, invoice, customer booking history and fleet-owner rentals/payments have been modernised. Vehicle/driver management and other inherited pages still need a separate audit. Do not expose this build publicly until the remaining legacy pages are reviewed and the full end-to-end test suite is run.
 
 ---
 
@@ -87,8 +87,8 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 - Original data preserved; additive, repeatable migration
 - Vehicle categories, seats, fuel type, transmission; booking status, payment status and times; a payments ledger
 
-### Legacy pages still in use (being replaced)
-Booking, booking confirmation, return a car, bill/receipt, booking history, add vehicle, add driver, fleet-owner rental view.
+### Remaining legacy pages
+Vehicle and driver management pages, plus some original utility routes, still need security and ownership audits. Booking, return, invoice, customer history and fleet rental/payment ledger have modernised replacements.
 
 ### Planned
 Availability-checked booking with date and time, fare estimate, cancellation, payment-status management, invoices/receipts (printable and PDF), dashboards, and booking, customer, vehicle and revenue reports. See the [Roadmap](#roadmap).
@@ -224,7 +224,7 @@ All configuration lives in `.env` (git-ignored). Real environment variables, if 
 | `DB_NAME` | `carrental` | Database name |
 | `DB_USER` | `root` | Database user (use a dedicated account) |
 | `DB_PASS` | *(empty)* | Database password |
-| `ALLOW_ADMIN_SIGNUP` | `true` | Let anyone self-register as a fleet owner (admin). **Set `false` on public servers** and create owners with the CLI tool |
+| `ALLOW_ADMIN_SIGNUP` | `false` | Public fleet-owner self-registration is disabled by default. Set `true` only for controlled development; create production owners with the CLI tool |
 
 Other settings are in code: session idle timeout (30 minutes), login lockout (5 failed attempts, 15 minutes) in `includes/security.php`; time zone (`Asia/Kolkata`) in `includes/bootstrap.php`.
 
@@ -535,7 +535,7 @@ What the other two cover: filters and pagination counts, XSS and SQL-injection p
 - [ ] `.env` readable only by the web user (`chmod 640`)
 - [ ] PHP: `display_errors=Off`, errors logged to a file outside the web root
 - [ ] Database backups scheduled
-- [ ] **Legacy pages replaced** (Phases 4–6) before exposing the site publicly
+- [ ] Remaining legacy vehicle/driver management and utility pages audited and secured before public deployment
 - [ ] `tests/` and `database/` not reachable from the web (automatic with option A/B)
 
 ---
@@ -561,7 +561,7 @@ What the other two cover: filters and pagination counts, XSS and SQL-injection p
 
 ## Roadmap
 
-**Phase 4 – Booking.** New `booking.php` with date/time selection and AC/non-AC choice; server-side fare estimate; driver picker; transactional double-booking protection; status flow and customer cancellation.
+**Phase 4 – Booking (core implemented).** Date selection, AC/non-AC choice, server-side fare estimate, driver assignment and transactional double-booking protection are in place. Time selection and customer cancellation remain.
 
 **Phase 5 – Management and dashboards.** Vehicle CRUD with safe image upload (type and size validation, generated filenames); driver management with activate/deactivate; customer list and profile; customer dashboard (active, upcoming, history, spend) and admin dashboard (fleet utilisation, today's pickups/returns, revenue, outstanding payments).
 
