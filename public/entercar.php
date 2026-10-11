@@ -1,217 +1,64 @@
-<!DOCTYPE html>
-<html>
-
-<?php 
-include('session_client.php'); ?> 
-<head>
-<link rel="shortcut icon" type="image/png" href="assets/img/P.png.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/customerlogin.css">
-    <link rel="stylesheet" href="assets/w3css/w3.css">
-  <script type="text/javascript" src="assets/js/jquery.min.js"></script>
-  <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/clientpage.css" />
-</head>
-<body>
-
-      <!-- Navigation -->
-    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation" style="color: black">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
-                    <i class="fa fa-bars"></i>
-                    </button>
-                <a class="navbar-brand page-scroll" href="index.php">
-                   PATNA CAR RENTAL </a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-
-            <?php
-                if(isset($_SESSION['login_client'])){
-            ?> 
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_client']; ?></a>
-                    </li>
-                    <li>
-                    <ul class="nav navbar-nav navbar-right">
-            <li><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> Control Panel <span class="caret"></span> </a>
-                <ul class="dropdown-menu">
-              <li> <a href="entercar.php">Add Car</a></li>
-              <li> <a href="enterdriver.php"> Add Driver</a></li>
-              <li> <a href="clientview.php">View</a></li>
-
-            </ul>
-            </li>
-          </ul>
-                    </li>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-            
-            <?php
-                }
-                else if (isset($_SESSION['login_customer'])){
-            ?>
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_customer']; ?></a>
-                    </li>
-                    <li>
-                        <a href="#">History</a>
-                    </li>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-
-            <?php
-            }
-                else {
-            ?>
-
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="clientlogin.php">Client</a>
-                    </li>
-                    <li>
-                        <a href="customerlogin.php">Customer</a>
-                    </li>
-                    <li>
-                        <a href="#"> FAQ </a>
-                    </li>
-                </ul>
-            </div>
-                <?php   }
-                ?>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-
-    <div class="container" style="margin-top: 65px;" >
-    <div class="col-md-7" style="float: none; margin: 0 auto;">
-      <div class="form-area">
-        <form role="form" action="entercar1.php" enctype="multipart/form-data" method="POST">
-        <br style="clear: both">
-          <h3 style="margin-bottom: 25px; text-align: center; font-size: 30px;"> Want to rent your car? Give us your car details. </h3>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="car_name" name="car_name" placeholder="Car Name " required autofocus="">
-          </div>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="car_nameplate" name="car_nameplate" placeholder="Vehicle Number (Name Plate Number)" required>
-          </div>     
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="ac_price" name="ac_price" placeholder="AC Fare per km (in rupees)" required>
-          </div>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="non_ac_price" name="non_ac_price" placeholder="Non-AC Fare per km (in rupees)" required>
-          </div>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="ac_price_per_day" name="ac_price_per_day" placeholder="AC Fare per day (in rupees)" required>
-          </div>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="non_ac_price_per_day" name="non_ac_price_per_day" placeholder="Non-AC Fare per day (in rupees)" required>
-          </div>
-
-          <div class="form-group">
-            <input name="uploadedimage" type="file">
-          </div>
-           <button type="submit" id="submit" name="submit" class="btn btn-primary pull-right"> Add car</button>    
-        </form>
-      </div>
-    </div>
-
-
-        <div class="col-md-12" style="float: none; margin: 0 auto;">
-    <div class="form-area" style="padding: 0px 100px 100px 100px;">
-        <form action="" method="POST">
-        <br style="clear: both">
-          <h3 style="margin-bottom: 25px; text-align: center; font-size: 30px;"> My Cars </h3>
 <?php
-// Storing Session
-$user_check=$_SESSION['login_client'];
-$sql = "SELECT * FROM cars WHERE car_id IN (SELECT car_id FROM clientcars WHERE client_username='$user_check');";
-$result = mysqli_query($conn, $sql);
-
-if (mysqli_num_rows($result) > 0) {
-  ?>
-<div style="overflow-x:auto;">
-  <table class="table table-striped">
-    <thead class="thead-dark">
-      <tr>
-        <th></th>
-        <th width="24%"> Name</th>
-        <th width="15%"> Nameplate </th>
-        <th width="13%"> AC Fare (/km) </th>
-        <th width="17%"> Non-AC Fare (/km)</th>
-        <th width="13%"> AC Fare (/day)</th>
-        <th width="17%"> Non-AC Fare (/day)</th>
-        <th width="1%"> Availability </th>
-      </tr>
-    </thead>
-
-    <?PHP
-      //OUTPUT DATA OF EACH ROW
-      while($row = mysqli_fetch_assoc($result)){
-    ?>
-
-  <tbody>
-    <tr>
-      <td> <span class="glyphicon glyphicon-menu-right"></span> </td>
-      <td><?php echo $row["car_name"]; ?></td>
-      <td><?php echo $row["car_nameplate"]; ?></td>
-      <td><?php echo $row["ac_price"]; ?></td>
-      <td><?php echo $row["non_ac_price"]; ?></td>
-      <td><?php echo $row["ac_price_per_day"]; ?></td>
-      <td><?php echo $row["non_ac_price_per_day"]; ?></td>
-      <td><?php echo $row["car_availability"]; ?></td>
-      
-    </tr>
-  </tbody>
-  <?php } ?>
-  </table>
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/layout.php';
+require_once __DIR__ . '/../includes/cars.php';
+$user = require_role('admin');
+$errors = [];
+$old = [];
+if (is_post()) {
+    csrf_check();
+    [$errors, $old] = validate($_POST, [
+        'car_name'=>'required|min:2|max:100',
+        'car_nameplate'=>'required|min:2|max:30',
+        'ac_price'=>'required|numeric|positive',
+        'non_ac_price'=>'required|numeric|positive',
+        'ac_price_per_day'=>'required|numeric|positive',
+        'non_ac_price_per_day'=>'required|numeric|positive',
+        'category'=>'required|in:Hatchback,Sedan,SUV,MPV,Luxury',
+        'seats'=>'required|int',
+        'transmission'=>'required|in:Manual,Automatic',
+        'fuel_type'=>'required|in:Petrol,Diesel,CNG,Electric,Hybrid',
+        'description'=>'max:1000',
+    ]);
+    if (!$errors && ((int)$old['seats'] < 2 || (int)$old['seats'] > 15)) $errors['seats']='Seats must be between 2 and 15.';
+    if (!$errors && db_value('SELECT COUNT(*) FROM cars WHERE car_nameplate = ?', [$old['car_nameplate']])) $errors['car_nameplate']='This vehicle number is already registered.';
+    if (!$errors) {
+        db_transaction(function () use ($old, $user): void {
+            db_exec('INSERT INTO cars (car_name, car_nameplate, car_img, ac_price, non_ac_price, ac_price_per_day, non_ac_price_per_day, car_availability, category, seats, transmission, fuel_type, description, is_active) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)', [
+                $old['car_name'], strtoupper($old['car_nameplate']), (float)$old['ac_price'], (float)$old['non_ac_price'],
+                (float)$old['ac_price_per_day'], (float)$old['non_ac_price_per_day'], 'yes', $old['category'],
+                (int)$old['seats'], $old['transmission'], $old['fuel_type'], $old['description'] ?: null
+            ]);
+            db_exec('INSERT INTO clientcars (car_id, client_username) VALUES (?, ?)', [db_insert_id(), $user['id']]);
+        });
+        flash('success', 'Vehicle added to your fleet.');
+        redirect(url('entercar.php'));
+    }
+}
+$cars = db_all('SELECT c.* FROM cars c JOIN clientcars cc ON cc.car_id=c.car_id WHERE cc.client_username=? ORDER BY c.car_id DESC', [$user['id']]);
+render_header('Fleet vehicles', 'fleet');
+?>
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4"><div><p class="text-uppercase small text-secondary mb-1">Fleet management</p><h1 class="h2 fw-bold mb-1">Your vehicles</h1><p class="text-secondary mb-0">Add vehicles and maintain clear, accurate rental rates.</p></div><span class="badge text-bg-light border fs-6"><?= count($cars) ?> vehicles</span></div>
+  <div class="row g-4">
+    <div class="col-lg-5"><div class="card shadow-sm border-0"><div class="card-body p-4">
+      <h2 class="h5 fw-bold mb-3">Add a vehicle</h2>
+      <?php if ($errors): ?><div class="alert alert-danger"><strong>Please check:</strong><ul class="mb-0"><?php foreach ($errors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
+      <form method="post" action="<?= e(url('entercar.php')) ?>"><?= csrf_field() ?>
+        <div class="mb-3"><label class="form-label" for="car_name">Vehicle name</label><input class="form-control" id="car_name" name="car_name" required maxlength="100" value="<?= e($old['car_name'] ?? '') ?>"></div>
+        <div class="mb-3"><label class="form-label" for="car_nameplate">Registration number</label><input class="form-control text-uppercase" id="car_nameplate" name="car_nameplate" required maxlength="30" value="<?= e($old['car_nameplate'] ?? '') ?>"></div>
+        <div class="row g-3 mb-3"><div class="col-6"><label class="form-label" for="category">Category</label><select class="form-select" id="category" name="category" required><?php foreach (['Hatchback','Sedan','SUV','MPV','Luxury'] as $v): ?><option <?= ($old['category'] ?? 'Hatchback')===$v?'selected':'' ?>><?= e($v) ?></option><?php endforeach; ?></select></div><div class="col-6"><label class="form-label" for="seats">Seats</label><input class="form-control" id="seats" name="seats" type="number" min="2" max="15" required value="<?= e($old['seats'] ?? '5') ?>"></div></div>
+        <div class="row g-3 mb-3"><div class="col-6"><label class="form-label" for="transmission">Transmission</label><select class="form-select" id="transmission" name="transmission"><?php foreach (['Manual','Automatic'] as $v): ?><option <?= ($old['transmission'] ?? 'Manual')===$v?'selected':'' ?>><?= e($v) ?></option><?php endforeach; ?></select></div><div class="col-6"><label class="form-label" for="fuel_type">Fuel</label><select class="form-select" id="fuel_type" name="fuel_type"><?php foreach (['Petrol','Diesel','CNG','Electric','Hybrid'] as $v): ?><option <?= ($old['fuel_type'] ?? 'Petrol')===$v?'selected':'' ?>><?= e($v) ?></option><?php endforeach; ?></select></div></div>
+        <h3 class="small fw-bold text-uppercase text-secondary mt-4">Rates (₹)</h3>
+        <div class="row g-3"><?php foreach (['ac_price'=>'AC per km','non_ac_price'=>'Non-AC per km','ac_price_per_day'=>'AC per day','non_ac_price_per_day'=>'Non-AC per day'] as $key=>$label): ?><div class="col-6"><label class="form-label" for="<?= e($key) ?>"><?= e($label) ?></label><input class="form-control" type="number" min="0.01" step="0.01" id="<?= e($key) ?>" name="<?= e($key) ?>" required value="<?= e($old[$key] ?? '') ?>"></div><?php endforeach; ?></div>
+        <div class="mt-3 mb-3"><label class="form-label" for="description">Description <span class="text-secondary">(optional)</span></label><textarea class="form-control" id="description" name="description" rows="3" maxlength="1000"><?= e($old['description'] ?? '') ?></textarea></div>
+        <p class="small text-secondary">Vehicle photos are loaded from royalty-free online sources; no image upload is stored in this app.</p><button class="btn btn-brand w-100" type="submit"><i class="fa-solid fa-plus me-2"></i>Add vehicle</button>
+      </form>
+    </div></div></div>
+    <div class="col-lg-7"><div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="p-4 border-bottom"><h2 class="h5 fw-bold mb-0">Fleet inventory</h2></div>
+    <?php if (!$cars): ?><div class="p-5 text-center"><i class="fa-solid fa-car-side fa-2x text-secondary mb-3"></i><p class="mb-0 text-secondary">No vehicles yet. Add your first vehicle using the form.</p></div><?php else: ?><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Vehicle</th><th>Category</th><th>Day rate</th><th>Status</th></tr></thead><tbody><?php foreach ($cars as $car): ?><tr><td><div class="fw-semibold"><?= e($car['car_name']) ?></div><div class="small text-secondary"><?= e($car['car_nameplate']) ?></div></td><td><?= e($car['category'] ?? '—') ?><div class="small text-secondary"><?= (int)$car['seats'] ?> seats · <?= e($car['fuel_type'] ?? '—') ?></div></td><td><?= money($car['ac_price_per_day']) ?><div class="small text-secondary">AC / day</div></td><td><span class="badge <?= (int)($car['is_active'] ?? 1)===1?'text-bg-success':'text-bg-secondary' ?>"><?= (int)($car['is_active'] ?? 1)===1?'Active':'Inactive' ?></span></td></tr><?php endforeach; ?></tbody></table></div><?php endif; ?>
+    </div></div></div>
   </div>
-    <br>
-  <?php } else { ?>
-  <h4><center>0 Cars available</center> </h4>
-  <?php } ?>
-        </form>
-</div>        
-        </div>
-    </div>
-</body>
-<footer class="site-footer">
-        <div class="container">
-            <hr>
-            <div class="row">
-                <div class="col-sm-6">
-                    <h5>© 2018 Patna Car Rental</h5>
-                </div>
-            </div>
-        </div>
-    </footer>
-</html>
+</div>
+<?php render_footer(); ?>
