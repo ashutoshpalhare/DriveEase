@@ -107,5 +107,5 @@ function is_https(): bool
 /** Public fleet-owner (admin) registration switch. Default on = original behaviour. */
 function admin_signup_enabled(): bool
 {
-    return filter_var(config('ALLOW_ADMIN_SIGNUP', 'true'), FILTER_VALIDATE_BOOLEAN);
+    return filter_var(config('ALLOW_ADMIN_SIGNUP', 'false'), FILTER_VALIDATE_BOOLEAN);
 }
