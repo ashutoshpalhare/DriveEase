@@ -1,212 +1,150 @@
-
-<!DOCTYPE html>
-<html>
-<?php 
-include('session_client.php'); ?>
-<head>
-<link rel="shortcut icon" type="image/png" href="assets/img/P.png.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-<link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
-    <link rel="stylesheet" href="assets/w3css/w3.css">
-<link rel="stylesheet" type="text/css" href="assets/css/customerlogin.css">
-<script type="text/javascript" src="assets/js/jquery.min.js"></script>
-<script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
-<link rel="stylesheet" type="text/css" media="screen" href="assets/css/clientpage.css" />
-</head>
-<body>
- <!-- Navigation -->
- <nav class="navbar navbar-custom navbar-fixed-top" role="navigation" style="color: black">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
-                    <i class="fa fa-bars"></i>
-                    </button>
-                <a class="navbar-brand page-scroll" href="index.php">
-                   PATNA CAR RENTAL </a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-
-            <?php
-                if(isset($_SESSION['login_client'])){
-            ?> 
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_client']; ?></a>
-                    </li>
-                    <li>
-                    <ul class="nav navbar-nav navbar-right">
-            <li><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> Control Panel <span class="caret"></span> </a>
-                <ul class="dropdown-menu">
-              <li> <a href="entercar.php">Add Car</a></li>
-              <li> <a href="enterdriver.php"> Add Driver</a></li>
-              <li> <a href="clientview.php">View</a></li>
-
-            </ul>
-            </li>
-          </ul>
-                    </li>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-            
-            <?php
-                }
-                else if (isset($_SESSION['login_customer'])){
-            ?>
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="#"><span class="glyphicon glyphicon-user"></span> Welcome <?php echo $_SESSION['login_customer']; ?></a>
-                    </li>
-                    <li>
-                        <a href="#">History</a>
-                    </li>
-                    <li>
-                        <a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
-                    </li>
-                </ul>
-            </div>
-
-            <?php
-            }
-                else {
-            ?>
-
-            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li>
-                        <a href="clientlogin.php">Client</a>
-                    </li>
-                    <li>
-                        <a href="customerlogin.php">Customer</a>
-                    </li>
-                    <li>
-                        <a href="#"> FAQ </a>
-                    </li>
-                </ul>
-            </div>
-                <?php   }
-                ?>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-
-    <div class="container" style="margin-top: 65px;" >
-    <div class="col-md-7" style="float: none; margin: 0 auto;">
-      <div class="form-area">
-        <form role="form" action="enterdriver1.php" method="POST">
-        <br style="clear: both">
-          <h3 style="margin-bottom: 25px; text-align: center; font-size: 30px;"> Enter Driver Details </h3>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="driver_name" name="driver_name" placeholder="Driver Name " required autofocus="">
-          </div>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="dl_number" name="dl_number" placeholder="Driving License Number" required>
-          </div>     
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="driver_phone" name="driver_phone" placeholder="Contact" required>
-          </div>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="driver_address" name="driver_address" placeholder="Address" required>
-          </div>
-
-          <div class="form-group">
-            <input type="text" class="form-control" id="driver_gender" name="driver_gender" placeholder="Gender" required>
-          </div>
-
-           <button type="submit" id="submit" name="submit" class="btn btn-primary pull-right"> Add Driver</button>    
-        </form>
-      </div>
-    </div>
-    <div class="col-md-9" style="float: none; margin: 0 auto;">
-    <div class="form-area" style="padding: 0px 100px 100px 100px;">
-        <form action="" method="POST">
-        <br style="clear: both">
-          <h3 style="margin-bottom: 25px; text-align: center; font-size: 30px;"> My Drivers </h3>
 <?php
-// Storing Session
-$user_check=$_SESSION['login_client'];
-$sql = "SELECT * FROM driver d WHERE d.client_username='$user_check' ORDER BY driver_name";
-$result = mysqli_query($conn, $sql);
+declare(strict_types=1);
 
-if (mysqli_num_rows($result) > 0) {
-  ?>
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/layout.php';
 
-  <table class="table table-striped">
-    <thead class="thead-dark">
-      <tr>
-        <th>     </th>
-        <th> Name</th>
-        <th> Gender </th>
-        <th> DL Number </th>
-        <th> Contact </th>
-        <th> Address </th>
-        <th> Availability </th>
-      </tr>
-    </thead>
+$user = require_role('admin');
+$errors = [];
+$old = [];
 
-    <?PHP
-      //OUTPUT DATA OF EACH ROW
-      while($row = mysqli_fetch_assoc($result)){
-    ?>
+if (is_post()) {
+    csrf_check();
+    [$errors, $old] = validate($_POST, [
+        'driver_name' => 'required|min:2|max:100',
+        'dl_number' => 'required|min:5|max:40',
+        'driver_phone' => 'required|phone',
+        'driver_address' => 'required|min:5|max:255',
+        'driver_gender' => 'required|in:Male,Female,Other',
+    ]);
 
-  <tbody>
-    <tr>
-      <td> <span class="glyphicon glyphicon-menu-right"></span> </td>
-      <td><?php echo $row["driver_name"]; ?></td>
-      <td><?php echo $row["driver_gender"]; ?></td>
-      <td><?php echo $row["dl_number"]; ?></td>
-      <td><?php echo $row["driver_phone"]; ?></td>
-      <td><?php echo $row["driver_address"]; ?></td>
-      <td><?php echo $row["driver_availability"]; ?></td>
-      
-    </tr>
-  </tbody>
-  
-  <?php } ?>
-  </table>
-    <br>
+    if (!$errors && db_value('SELECT COUNT(*) FROM driver WHERE dl_number = ?', [strtoupper($old['dl_number'])])) {
+        $errors['dl_number'] = 'This driving licence number is already registered.';
+    }
 
+    if (!$errors) {
+        db_exec(
+            'INSERT INTO driver (driver_name, dl_number, driver_phone, driver_address, driver_gender, client_username, driver_availability, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
+            [
+                trim($old['driver_name']),
+                strtoupper(trim($old['dl_number'])),
+                trim($old['driver_phone']),
+                trim($old['driver_address']),
+                $old['driver_gender'],
+                $user['id'],
+                'yes',
+            ]
+        );
+        flash('success', 'Driver added to your fleet.');
+        redirect(url('enterdriver.php'));
+    }
+}
 
-  <?php } else { ?>
+$drivers = db_all(
+    'SELECT driver_name, dl_number, driver_phone, driver_address, driver_gender, driver_availability FROM driver WHERE client_username = ? ORDER BY driver_name',
+    [$user['id']]
+);
 
-  <h4><center>0 Drivers available</center> </h4>
+render_header('Driver management', 'drivers');
+?>
+<div class="container py-4">
+  <div class="mb-4">
+    <p class="text-uppercase small text-secondary fw-semibold mb-1">Fleet operations</p>
+    <h1 class="h2 mb-1">Driver management</h1>
+    <p class="text-secondary mb-0">Add drivers and manage your fleet roster.</p>
+  </div>
 
-  <?php } ?>
+  <?php if ($errors): ?>
+    <div class="alert alert-danger" role="alert">
+      <strong>Please correct the following:</strong>
+      <ul class="mb-0 mt-2">
+        <?php foreach ($errors as $error): ?><li><?= e($error) ?></li><?php endforeach; ?>
+      </ul>
+    </div>
+  <?php endif; ?>
 
-        </form>
-
-</div>        
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <section class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="h5 mb-3">Add a driver</h2>
+          <form method="post" action="<?= e(url('enterdriver.php')) ?>" novalidate>
+            <?= csrf_field() ?>
+            <div class="mb-3">
+              <label class="form-label" for="driver_name">Full name</label>
+              <input class="form-control" id="driver_name" name="driver_name" maxlength="100" required value="<?= e($old['driver_name'] ?? '') ?>">
+              <?php if (isset($errors['driver_name'])): ?><div class="form-text text-danger"><?= e($errors['driver_name']) ?></div><?php endif; ?>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="dl_number">Driving licence number</label>
+              <input class="form-control text-uppercase" id="dl_number" name="dl_number" maxlength="40" required value="<?= e($old['dl_number'] ?? '') ?>">
+              <?php if (isset($errors['dl_number'])): ?><div class="form-text text-danger"><?= e($errors['dl_number']) ?></div><?php endif; ?>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="driver_phone">Phone</label>
+              <input class="form-control" id="driver_phone" name="driver_phone" type="tel" maxlength="20" required value="<?= e($old['driver_phone'] ?? '') ?>">
+              <?php if (isset($errors['driver_phone'])): ?><div class="form-text text-danger"><?= e($errors['driver_phone']) ?></div><?php endif; ?>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="driver_address">Address</label>
+              <textarea class="form-control" id="driver_address" name="driver_address" rows="3" maxlength="255" required><?= e($old['driver_address'] ?? '') ?></textarea>
+              <?php if (isset($errors['driver_address'])): ?><div class="form-text text-danger"><?= e($errors['driver_address']) ?></div><?php endif; ?>
+            </div>
+            <div class="mb-4">
+              <label class="form-label" for="driver_gender">Gender</label>
+              <select class="form-select" id="driver_gender" name="driver_gender" required>
+                <option value="">Select gender</option>
+                <?php foreach (['Male', 'Female', 'Other'] as $gender): ?>
+                  <option value="<?= e($gender) ?>" <?= ($old['driver_gender'] ?? '') === $gender ? 'selected' : '' ?>><?= e($gender) ?></option>
+                <?php endforeach; ?>
+              </select>
+              <?php if (isset($errors['driver_gender'])): ?><div class="form-text text-danger"><?= e($errors['driver_gender']) ?></div><?php endif; ?>
+            </div>
+            <button class="btn btn-brand w-100" type="submit"><i class="fa-solid fa-user-plus me-2"></i>Add driver</button>
+          </form>
         </div>
+      </section>
     </div>
 
-</body>
-<footer class="site-footer">
-        <div class="container">
-            <hr>
-            <div class="row">
-                <div class="col-sm-6">
-                    <h5>© 2018 Patna Car Rental</h5>
-                </div>
+    <div class="col-lg-7">
+      <section class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="h5 mb-0">Your drivers</h2>
+            <span class="badge text-bg-light"><?= count($drivers) ?> total</span>
+          </div>
+          <?php if (!$drivers): ?>
+            <div class="text-center py-5">
+              <i class="fa-solid fa-id-card fa-2x text-secondary mb-3"></i>
+              <h3 class="h6">No drivers added yet</h3>
+              <p class="text-secondary small mb-0">Add your first driver using the form.</p>
             </div>
+          <?php else: ?>
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead><tr><th>Name / licence</th><th>Contact</th><th>Status</th></tr></thead>
+                <tbody>
+                <?php foreach ($drivers as $driver): ?>
+                  <tr>
+                    <td>
+                      <div class="fw-semibold"><?= e($driver['driver_name']) ?></div>
+                      <div class="small text-secondary"><?= e($driver['dl_number']) ?></div>
+                      <div class="small text-secondary"><?= e($driver['driver_gender']) ?></div>
+                    </td>
+                    <td>
+                      <div><?= e($driver['driver_phone']) ?></div>
+                      <div class="small text-secondary"><?= e($driver['driver_address']) ?></div>
+                    </td>
+                    <td><span class="badge <?= ($driver['driver_availability'] ?? '') === 'yes' ? 'text-bg-success' : 'text-bg-secondary' ?>"><?= e(ucfirst((string) ($driver['driver_availability'] ?? 'unknown'))) ?></span></td>
+                  </tr>
+                <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          <?php endif; ?>
         </div>
-    </footer>
-</html>
+      </section>
+    </div>
+  </div>
+</div>
+<?php render_footer(); ?>
