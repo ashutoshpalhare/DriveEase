@@ -10,6 +10,43 @@ $old = [];
 
 if (is_post()) {
     csrf_check();
+
+    if (($_POST['action'] ?? '') === 'toggle_driver') {
+        $driverId = filter_input(INPUT_POST, 'driver_id', FILTER_VALIDATE_INT);
+        try {
+            if (!$driverId || $driverId < 1) {
+                throw new DomainException('Invalid driver reference.');
+            }
+            db_transaction(function () use ($driverId, $user): void {
+                $driver = db_one(
+                    'SELECT driver_id, is_active, driver_availability FROM driver WHERE driver_id = ? AND client_username = ? FOR UPDATE',
+                    [$driverId, $user['id']]
+                );
+                if (!$driver) {
+                    throw new DomainException('Driver not found in your fleet.');
+                }
+                if ((int)$driver['is_active'] === 1 && (int)db_value(
+                    "SELECT COUNT(*) FROM rentedcars WHERE driver_id = ? AND booking_status = 'active' AND return_status = 'NR'",
+                    [$driverId]
+                ) > 0) {
+                    throw new DomainException('This driver is assigned to an active trip. Complete the trip before deactivating the driver.');
+                }
+                $activate = (int)$driver['is_active'] !== 1;
+                db_exec(
+                    'UPDATE driver SET is_active = ?, driver_availability = ? WHERE driver_id = ? AND client_username = ?',
+                    [$activate ? 1 : 0, $activate ? 'yes' : 'no', $driverId, $user['id']]
+                );
+            });
+            flash('success', 'Driver status updated.');
+        } catch (DomainException $e) {
+            flash('warning', $e->getMessage());
+        } catch (Throwable $e) {
+            error_log('DriveEase driver status update failed: ' . $e->getMessage());
+            flash('error', 'Driver status could not be updated. Please try again.');
+        }
+        redirect(url('enterdriver.php'));
+    }
+
     [$errors, $old] = validate($_POST, [
         'driver_name' => 'required|min:2|max:100',
         'dl_number' => 'required|min:5|max:40',
@@ -41,7 +78,7 @@ if (is_post()) {
 }
 
 $drivers = db_all(
-    'SELECT driver_name, dl_number, driver_phone, driver_address, driver_gender, driver_availability FROM driver WHERE client_username = ? ORDER BY driver_name',
+    'SELECT driver_id, driver_name, dl_number, driver_phone, driver_address, driver_gender, driver_availability, is_active FROM driver WHERE client_username = ? ORDER BY driver_name',
     [$user['id']]
 );
 
@@ -122,7 +159,7 @@ render_header('Driver management', 'drivers');
           <?php else: ?>
             <div class="table-responsive">
               <table class="table align-middle">
-                <thead><tr><th>Name / licence</th><th>Contact</th><th>Status</th></tr></thead>
+                <thead><tr><th>Name / licence</th><th>Contact</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody>
                 <?php foreach ($drivers as $driver): ?>
                   <tr>
@@ -135,7 +172,7 @@ render_header('Driver management', 'drivers');
                       <div><?= e($driver['driver_phone']) ?></div>
                       <div class="small text-secondary"><?= e($driver['driver_address']) ?></div>
                     </td>
-                    <td><span class="badge <?= ($driver['driver_availability'] ?? '') === 'yes' ? 'text-bg-success' : 'text-bg-secondary' ?>"><?= e(ucfirst((string) ($driver['driver_availability'] ?? 'unknown'))) ?></span></td>
+                    <td><span class="badge <?= (int)($driver['is_active'] ?? 1)===1 && ($driver['driver_availability'] ?? '') === 'yes' ? 'text-bg-success' : 'text-bg-secondary' ?>"><?= (int)($driver['is_active'] ?? 1)===1 ? e(ucfirst((string)($driver['driver_availability'] ?? 'unknown'))) : 'Inactive' ?></span></td><td><form method="post" action="<?= e(url('enterdriver.php')) ?>" data-once><?= csrf_field() ?><input type="hidden" name="action" value="toggle_driver"><input type="hidden" name="driver_id" value="<?= (int)$driver['driver_id'] ?>"><button class="btn btn-sm <?= (int)($driver['is_active'] ?? 1)===1?'btn-outline-danger':'btn-outline-success' ?>" type="submit" onclick="return confirm('<?= (int)($driver['is_active'] ?? 1)===1?'Deactivate this driver?':'Activate this driver?' ?>')"><?= (int)($driver['is_active'] ?? 1)===1?'Deactivate':'Activate' ?></button></form></td>
                   </tr>
                 <?php endforeach; ?>
                 </tbody>
