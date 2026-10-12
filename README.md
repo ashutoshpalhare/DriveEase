@@ -57,12 +57,12 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 | 1 | Analysis of the original code and database | ✅ Done |
 | 2 | Secure foundation: config, prepared-statement DB layer, sessions, CSRF, validation, role auth, additive DB migration | ✅ Done |
 | 3 | `public/` web root, Bootstrap 5 UI, homepage, car search/filter/details, availability checking, unified login and registration | ✅ Done |
-| 4 | Booking: date/time selection, server-side fare calculation, driver assignment, transactional availability check, statuses, cancellation | ⏳ Next |
-| 5 | Vehicle/driver legacy management, customer history, fleet rental ledger | 🟡 Partially implemented |
+| 4 | Booking: date selection, server-side fare calculation, driver assignment, transactional availability checks, statuses and cancellation | ✅ Core flow implemented |
+| 5 | Owner-scoped vehicle/driver management, customer history and fleet rental ledger | 🟡 Core flows implemented; end-to-end verification pending |
 | 6 | Return flow, final invoices, partial/full payment ledger | 🟡 Core flow implemented; reports/refunds pending |
-| 7 | Security audit, remove obsolete libraries/legacy code, full end-to-end regression pass | ⏳ Next |
+| 7 | Security audit, obsolete route review and full end-to-end regression pass | ⏳ In progress |
 
-**Current status:** booking, booking confirmation, return, invoice, customer booking history and fleet-owner rentals/payments have been modernised. Vehicle/driver management and other inherited pages still need a separate audit. Do not expose this build publicly until the remaining legacy pages are reviewed and the full end-to-end test suite is run.
+**Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, and owner-scoped vehicle/driver add, edit and activate/deactivate flows are implemented. CI now runs PHP syntax checks plus database-free lifecycle regression checks. Live-database and full end-to-end tests still need to be run before treating this as production-ready.
 
 ---
 
@@ -87,11 +87,15 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 - Original data preserved; additive, repeatable migration
 - Vehicle categories, seats, fuel type, transmission; booking status, payment status and times; a payments ledger
 
-### Remaining legacy pages
-Vehicle and driver management pages, plus some original utility routes, still need security and ownership audits. Booking, return, invoice, customer history and fleet rental/payment ledger have modernised replacements.
+### Fleet operations
+- Add and edit vehicles with validated rates, specifications and registration numbers.
+- Activate or deactivate vehicles without deleting records; deactivation is blocked while a trip is active.
+- Add and edit drivers with validated licence/contact details.
+- Activate or deactivate drivers without deleting records; deactivation is blocked while a trip is active.
+- Fleet lists and edit actions are scoped to the signed-in fleet owner; status-changing forms require CSRF tokens.
 
-### Planned
-Availability-checked booking with date and time, fare estimate, cancellation, payment-status management, invoices/receipts (printable and PDF), dashboards, and booking, customer, vehicle and revenue reports. See the [Roadmap](#roadmap).
+### Remaining work
+Live-database and end-to-end tests, further audit of inherited utility routes, operational reports, refunds, and payment-gateway integration remain planned. Manual payment recording is not a payment gateway. See the [Roadmap](#roadmap).
 
 ---
 
