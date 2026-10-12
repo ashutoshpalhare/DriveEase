@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   lint:
-    name: PHP syntax and shell checks
+    name: PHP syntax, lifecycle and shell checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +31,8 @@ jobs:
             exit 1
           fi
           for file in "${files[@]}"; do php -l "$file"; done
+      - name: Run database-free lifecycle regression checks
+        run: php tests/lifecycle_static_test.php
       - name: Validate shell test scripts
         run: |
           set -euo pipefail
