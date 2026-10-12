@@ -46,7 +46,15 @@ render_header('My bookings', 'history');
             <div class="col-6 col-md-3"><div class="small text-muted"><?= $b['booking_status']==='completed'?'Final total':'Estimated total' ?></div><strong><?= $b['total_amount']!==null && $b['booking_status']==='completed' ? e(money($b['total_amount'])) : ($b['estimated_total']!==null ? e(money($b['estimated_total'])) : 'Calculated after return') ?></strong></div>
           </div>
           <?php if ($b['booking_status']==='completed' && $b['distance']!==null): ?><div class="small text-muted mt-3">Trip completed<?= $b['car_return_date'] ? ' on '.e($b['car_return_date']) : '' ?> · <?= e((string)$b['distance']) ?> km recorded</div><?php endif; ?>
-          <?php if ($b['booking_status']==='completed' && $b['total_amount']!==null): ?><div class="mt-3"><a class="btn btn-outline-secondary btn-sm" href="<?= e(url('printbill.php?id='.(int)$b['id'])) ?>"><i class="fa-solid fa-file-invoice me-1"></i>View invoice</a></div><?php endif; ?>
+          <div class="mt-3 d-flex flex-wrap gap-2">
+            <?php if ($b['booking_status']==='completed' && $b['total_amount']!==null): ?><a class="btn btn-outline-secondary btn-sm" href="<?= e(url('printbill.php?id='.(int)$b['id'])) ?>"><i class="fa-solid fa-file-invoice me-1"></i>View invoice</a><?php endif; ?>
+            <?php if ($b['booking_status']==='confirmed' && (string)$b['rent_start_date'] > date('Y-m-d')): ?>
+              <form method="post" action="<?= e(url('cancelbooking.php')) ?>" onsubmit="return confirm('Cancel this booking? This action cannot be undone.');">
+                <?= csrf_field() ?><input type="hidden" name="booking_id" value="<?= (int)$b['id'] ?>">
+                <button class="btn btn-outline-danger btn-sm" type="submit"><i class="fa-solid fa-ban me-1"></i>Cancel booking</button>
+              </form>
+            <?php endif; ?>
+          </div>
         </div></article></div>
       <?php endforeach; ?>
     </div>
