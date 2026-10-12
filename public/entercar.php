@@ -8,6 +8,39 @@ $errors = [];
 $old = [];
 if (is_post()) {
     csrf_check();
+
+    if (($_POST['action'] ?? '') === 'toggle_vehicle') {
+        $carId = filter_input(INPUT_POST, 'car_id', FILTER_VALIDATE_INT);
+        try {
+            if (!$carId || $carId < 1) {
+                throw new DomainException('Invalid vehicle reference.');
+            }
+            db_transaction(function () use ($carId, $user): void {
+                $car = db_one(
+                    'SELECT c.car_id, c.is_active FROM cars c JOIN clientcars cc ON cc.car_id = c.car_id WHERE c.car_id = ? AND cc.client_username = ? FOR UPDATE',
+                    [$carId, $user['id']]
+                );
+                if (!$car) {
+                    throw new DomainException('Vehicle not found in your fleet.');
+                }
+                if ((int)$car['is_active'] === 1 && (int)db_value(
+                    "SELECT COUNT(*) FROM rentedcars WHERE car_id = ? AND booking_status = 'active' AND return_status = 'NR'",
+                    [$carId]
+                ) > 0) {
+                    throw new DomainException('This vehicle has an active trip. Return the vehicle before deactivating it.');
+                }
+                db_exec('UPDATE cars SET is_active = ? WHERE car_id = ?', [(int)$car['is_active'] === 1 ? 0 : 1, $carId]);
+            });
+            flash('success', 'Vehicle status updated.');
+        } catch (DomainException $e) {
+            flash('warning', $e->getMessage());
+        } catch (Throwable $e) {
+            error_log('DriveEase vehicle status update failed: ' . $e->getMessage());
+            flash('error', 'Vehicle status could not be updated. Please try again.');
+        }
+        redirect(url('entercar.php'));
+    }
+
     [$errors, $old] = validate($_POST, [
         'car_name'=>'required|min:2|max:100',
         'car_nameplate'=>'required|min:2|max:30',
@@ -57,7 +90,7 @@ render_header('Fleet vehicles', 'fleet');
       </form>
     </div></div></div>
     <div class="col-lg-7"><div class="card border-0 shadow-sm"><div class="card-body p-0"><div class="p-4 border-bottom"><h2 class="h5 fw-bold mb-0">Fleet inventory</h2></div>
-    <?php if (!$cars): ?><div class="p-5 text-center"><i class="fa-solid fa-car-side fa-2x text-secondary mb-3"></i><p class="mb-0 text-secondary">No vehicles yet. Add your first vehicle using the form.</p></div><?php else: ?><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Vehicle</th><th>Category</th><th>Day rate</th><th>Status</th></tr></thead><tbody><?php foreach ($cars as $car): ?><tr><td><div class="fw-semibold"><?= e($car['car_name']) ?></div><div class="small text-secondary"><?= e($car['car_nameplate']) ?></div></td><td><?= e($car['category'] ?? '—') ?><div class="small text-secondary"><?= (int)$car['seats'] ?> seats · <?= e($car['fuel_type'] ?? '—') ?></div></td><td><?= money($car['ac_price_per_day']) ?><div class="small text-secondary">AC / day</div></td><td><span class="badge <?= (int)($car['is_active'] ?? 1)===1?'text-bg-success':'text-bg-secondary' ?>"><?= (int)($car['is_active'] ?? 1)===1?'Active':'Inactive' ?></span></td></tr><?php endforeach; ?></tbody></table></div><?php endif; ?>
+    <?php if (!$cars): ?><div class="p-5 text-center"><i class="fa-solid fa-car-side fa-2x text-secondary mb-3"></i><p class="mb-0 text-secondary">No vehicles yet. Add your first vehicle using the form.</p></div><?php else: ?><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Vehicle</th><th>Category</th><th>Day rate</th><th>Status</th><th>Action</th></tr></thead><tbody><?php foreach ($cars as $car): ?><tr><td><div class="fw-semibold"><?= e($car['car_name']) ?></div><div class="small text-secondary"><?= e($car['car_nameplate']) ?></div></td><td><?= e($car['category'] ?? '—') ?><div class="small text-secondary"><?= (int)$car['seats'] ?> seats · <?= e($car['fuel_type'] ?? '—') ?></div></td><td><?= money($car['ac_price_per_day']) ?><div class="small text-secondary">AC / day</div></td><td><span class="badge <?= (int)($car['is_active'] ?? 1)===1?'text-bg-success':'text-bg-secondary' ?>"><?= (int)($car['is_active'] ?? 1)===1?'Active':'Inactive' ?></span></td><td><form method="post" action="<?= e(url('entercar.php')) ?>" data-once><?= csrf_field() ?><input type="hidden" name="action" value="toggle_vehicle"><input type="hidden" name="car_id" value="<?= (int)$car['car_id'] ?>"><button class="btn btn-sm <?= (int)($car['is_active'] ?? 1)===1?'btn-outline-danger':'btn-outline-success' ?>" type="submit" onclick="return confirm('<?= (int)($car['is_active'] ?? 1)===1?'Deactivate this vehicle?':'Activate this vehicle?' ?>')"><?= (int)($car['is_active'] ?? 1)===1?'Deactivate':'Activate' ?></button></form></td></tr><?php endforeach; ?></tbody></table></div><?php endif; ?>
     </div></div></div>
   </div>
 </div>
