@@ -55,7 +55,7 @@ check('payment ledger is created by migration', str_contains($migration, 'CREATE
 
 fwrite(STDOUT, "\nBooking safeguards\n");
 check('booking submission is POST-only and CSRF-protected', contains_all($booking, ['if (!is_post())', 'csrf_check();']));
-check('inactive cars and drivers cannot be booked', contains_all($booking, ['c.is_active = 1', 'd.is_active = 1']));
+check('inactive cars and drivers cannot be booked', contains_all($booking, ['car_id = ? AND is_active = 1', 'd.is_active = 1']));
 check('booking rejects overlapping blocking statuses', str_contains($booking, 'BLOCKING_STATUSES'));
 check('cancellation is POST-only and CSRF-protected', contains_all($cancellation, ['if (!is_post())', 'csrf_check();']));
 check('cancellation checks customer ownership and confirmed status', contains_all($cancellation, ['customer_username', 'confirmed']));
