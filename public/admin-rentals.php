@@ -7,6 +7,46 @@ $admin = require_role('admin');
 
 if (is_post()) {
     csrf_check();
+
+    // Start a confirmed trip only when its scheduled pickup date has arrived.
+    if (($_POST['action'] ?? '') === 'start_trip') {
+        $startBookingId = filter_input(INPUT_POST, 'booking_id', FILTER_VALIDATE_INT);
+        try {
+            if (!$startBookingId || $startBookingId < 1) {
+                throw new DomainException('Invalid booking reference.');
+            }
+            db_transaction(function () use ($admin, $startBookingId): void {
+                $booking = db_one(
+                    "SELECT r.id, r.rent_start_date, r.booking_status, r.return_status
+                     FROM rentedcars r
+                     JOIN clientcars cc ON cc.car_id = r.car_id
+                     WHERE r.id = ? AND cc.client_username = ? FOR UPDATE",
+                    [$startBookingId, $admin['id']]
+                );
+                if (!$booking) {
+                    throw new DomainException('Booking not found in your fleet.');
+                }
+                if ($booking['booking_status'] !== 'confirmed' || $booking['return_status'] !== 'NR') {
+                    throw new DomainException('Only confirmed, not-yet-returned bookings can be started.');
+                }
+                if ((string) $booking['rent_start_date'] > date('Y-m-d')) {
+                    throw new DomainException('You can start this trip on or after its scheduled pickup date.');
+                }
+                db_exec(
+                    "UPDATE rentedcars SET booking_status = 'active' WHERE id = ? AND booking_status = 'confirmed'",
+                    [$startBookingId]
+                );
+            });
+            flash('success', 'Trip started. The booking is now marked active.');
+        } catch (DomainException $e) {
+            flash('warning', $e->getMessage());
+        } catch (Throwable $e) {
+            error_log('DriveEase trip start failed: ' . $e->getMessage());
+            flash('error', 'The trip could not be started. Please try again.');
+        }
+        redirect(url('admin-rentals.php'));
+    }
+
     $bookingId = filter_input(INPUT_POST, 'booking_id', FILTER_VALIDATE_INT);
     $amountRaw = $_POST['amount'] ?? '';
     $method = (string)($_POST['method'] ?? 'cash');
@@ -99,7 +139,7 @@ render_header('Rentals & payments', 'rentals');
 <div class="container py-4">
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
     <div><div class="text-uppercase small fw-semibold text-muted">Fleet owner workspace</div><h1 class="h3 fw-bold mb-1">Rentals & payments</h1><p class="text-muted mb-0">Monitor completed trips, record received payments and track outstanding invoices.</p></div>
-    <a class="btn btn-outline-secondary" href="<?= e(url('clientview.php')) ?>"><i class="fa-solid fa-list me-2"></i>Legacy bookings view</a>
+    <div class="d-flex flex-wrap gap-2"><a class="btn btn-outline-secondary" href="<?= e(url('entercar.php')) ?>"><i class="fa-solid fa-car me-2"></i>Manage vehicles</a><a class="btn btn-outline-secondary" href="<?= e(url('enterdriver.php')) ?>"><i class="fa-solid fa-id-card me-2"></i>Manage drivers</a></div>
   </div>
   <div class="row g-3 mb-4">
     <div class="col-6 col-xl"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="small text-muted">Total rentals</div><div class="fs-3 fw-bold"><?= (int)($summary['total_rentals'] ?? 0) ?></div></div></div></div>
@@ -122,7 +162,10 @@ render_header('Rentals & payments', 'rentals');
           <td><?php if ($total !== null): ?><strong><?= e(money($total)) ?></strong><?php else: ?><span class="text-muted">Not finalised</span><?php endif; ?><?php if ((float)$r['late_fee']>0): ?><div class="small text-muted">Late fee <?= e(money($r['late_fee'])) ?></div><?php endif; ?>
             <?php if ($r['booking_status']==='completed' && $total!==null): ?><div><a class="small" href="<?= e(url('printbill.php?id='.(int)$r['id'])) ?>">View invoice</a></div><?php endif; ?></td>
           <td><strong><?= e(money($paid)) ?></strong><?php if ($due!==null): ?><div class="small <?= $due>0?'text-danger':'text-success' ?>"><?= $due>0 ? e(money($due)).' due' : 'Settled' ?></div><?php endif; ?></td>
-          <td style="min-width:245px"><?php if ($r['booking_status']==='completed' && $total!==null && $due!==null && $due>0): ?>
+          <td style="min-width:245px"><?php if ($r['booking_status']==='confirmed' && $r['return_status']==='NR' && (string)$r['rent_start_date'] <= date('Y-m-d')): ?>
+            <form method="post" data-once><?= csrf_field() ?><input type="hidden" name="action" value="start_trip"><input type="hidden" name="booking_id" value="<?= (int)$r['id'] ?>"><button class="btn btn-sm btn-outline-primary w-100" type="submit" onclick="return confirm('Start this rental now?')"><i class="fa-solid fa-play me-1"></i>Start trip</button></form>
+          <?php elseif ($r['booking_status']==='active'): ?><span class="small text-primary"><i class="fa-solid fa-road me-1"></i>Trip in progress</span>
+          <?php elseif ($r['booking_status']==='completed' && $total!==null && $due!==null && $due>0): ?>
             <form method="post" class="d-grid gap-2" data-once><?= csrf_field() ?><input type="hidden" name="booking_id" value="<?= (int)$r['id'] ?>">
               <div class="input-group input-group-sm"><span class="input-group-text">₹</span><input class="form-control" type="number" name="amount" min="0.01" max="<?= e(number_format($due,2,'.','')) ?>" step="0.01" placeholder="Amount" aria-label="Payment amount" required></div>
               <select class="form-select form-select-sm" name="method" aria-label="Payment method"><option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="bank_transfer">Bank transfer</option><option value="other">Other</option></select>
