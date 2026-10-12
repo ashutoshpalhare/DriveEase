@@ -47,6 +47,8 @@ $returnHandler = source('public/printbill.php');
 $adminRentals = source('public/admin-rentals.php');
 $vehicles = source('public/entercar.php');
 $drivers = source('public/enterdriver.php');
+$vehicleEdit = source('public/editvehicle.php');
+$driverEdit = source('public/editdriver.php');
 
 fwrite(STDOUT, "Migration compatibility\n");
 check('booking cancellation columns are migrated', contains_all($migration, ["'cancelled_at'", "'cancel_reason'"]));
@@ -72,8 +74,12 @@ check('payment ledger and booking balance update together', contains_all($adminR
 fwrite(STDOUT, "\nFleet management safeguards\n");
 check('vehicle creation is admin-only and CSRF-protected', contains_all($vehicles, ["require_role('admin')", 'csrf_check();']));
 check('vehicle registration uses prepared duplicate check', contains_all($vehicles, ['car_nameplate = ?', 'db_exec(']));
+check('vehicle edit is CSRF-protected and owner-scoped', contains_all($vehicleEdit, ['csrf_check();', 'cc.client_username = ?', 'UPDATE cars SET']));
+check('vehicle cannot be deactivated during an active trip', contains_all($vehicles, ['toggle_vehicle', "booking_status = 'active'", 'active trip']));
 check('driver creation is admin-only and CSRF-protected', contains_all($drivers, ["require_role('admin')", 'csrf_check();']));
 check('driver listing is scoped to the fleet owner', str_contains($drivers, 'WHERE client_username = ?'));
+check('driver edit is CSRF-protected and owner-scoped', contains_all($driverEdit, ['csrf_check();', 'WHERE driver_id = ? AND client_username = ?', 'UPDATE driver SET']));
+check('driver cannot be deactivated during an active trip', contains_all($drivers, ['toggle_driver', "booking_status = 'active'", 'active trip']));
 
 fwrite(STDOUT, "\nResult: {$passed} passed, {$failed} failed\n");
 exit($failed === 0 ? 0 : 1);
