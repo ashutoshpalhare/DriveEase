@@ -7,7 +7,10 @@ $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$id || $id < 1) { http_response_code(400); exit('Invalid booking reference.'); }
 $b = db_one("SELECT r.id,r.customer_username,r.rent_start_date,r.rent_end_date,r.fare,r.charge_type,r.booking_status,r.return_status,c.car_name,c.car_nameplate,d.driver_name,d.driver_phone FROM rentedcars r JOIN cars c ON c.car_id=r.car_id JOIN driver d ON d.driver_id=r.driver_id WHERE r.id=? AND r.customer_username=? LIMIT 1", [$id,$user['id']]);
 if (!$b) { http_response_code(404); exit('Booking not found.'); }
-if ($b['return_status'] !== 'NR' || !in_array($b['booking_status'], ['confirmed','active'], true)) { flash('info','This booking has already been returned or is not eligible for return.'); redirect(url('mybookings.php')); }
+if ($b['return_status'] !== 'NR' || $b['booking_status'] !== 'active') {
+    flash('info', 'This trip is not active yet. The fleet owner must start the trip before it can be returned.');
+    redirect(url('mybookings.php'));
+}
 $days = rental_days((string)$b['rent_start_date'], (string)$b['rent_end_date']);
 render_header('Return rental','trips');
 ?>
