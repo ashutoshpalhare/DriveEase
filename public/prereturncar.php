@@ -10,18 +10,18 @@ $bookings = db_all(
             r.booking_status, c.car_name, c.car_nameplate, d.driver_name
      FROM rentedcars r JOIN cars c ON c.car_id = r.car_id JOIN driver d ON d.driver_id = r.driver_id
      WHERE r.customer_username = ? AND r.return_status = 'NR'
-       AND r.booking_status IN ('confirmed', 'active')
+       AND r.booking_status = 'active'
      ORDER BY r.rent_end_date ASC, r.id DESC",
     [$user['id']]
 );
 render_header('Active rentals', 'trips');
 ?>
 <div class="container py-4">
-  <div class="mb-4"><h1 class="h3 fw-bold mb-1">Active rentals</h1><p class="text-muted mb-0">Review your trip and submit the actual distance or rental duration to prepare the final invoice.</p></div>
+  <div class="mb-4"><h1 class="h3 fw-bold mb-1">Active rentals</h1><p class="text-muted mb-0">Review an active trip and submit its actual distance or rental duration to prepare the final invoice.</p></div>
   <?php if (!$bookings): ?>
     <div class="card border-0 shadow-sm"><div class="card-body text-center py-5">
       <i class="fa-solid fa-car-side fa-3x text-muted mb-3"></i><h2 class="h5 fw-bold">No active rentals</h2>
-      <p class="text-muted">Bookings that are awaiting return will appear here.</p><a class="btn btn-brand" href="<?= e(url('mybookings.php')) ?>">View booking history</a>
+      <p class="text-muted">Trips started by your fleet owner will appear here once they are ready for return.</p><a class="btn btn-brand" href="<?= e(url('mybookings.php')) ?>">View booking history</a>
     </div></div>
   <?php else: ?>
     <div class="row g-3">
