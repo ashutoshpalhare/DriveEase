@@ -18,7 +18,9 @@ if (is_post()) {
         db_transaction(function () use ($id, $user): void {
             $b = db_one('SELECT id, customer_username, rent_start_date, rent_end_date, fare, charge_type, booking_status, return_status FROM rentedcars WHERE id = ? FOR UPDATE', [$id]);
             if (!$b || $b['customer_username'] !== $user['id']) throw new DomainException('Booking not found.');
-            if ($b['return_status'] !== 'NR' || !in_array($b['booking_status'], ['confirmed', 'active'], true)) throw new DomainException('This booking has already been returned.');
+            if ($b['return_status'] !== 'NR' || $b['booking_status'] !== 'active') {
+                throw new DomainException('Only an active trip can be returned. Ask the fleet owner to start the trip first.');
+            }
             if ((string)$b['rent_start_date'] > date('Y-m-d')) {
                 throw new DomainException('This rental cannot be returned before its pickup date.');
             }
