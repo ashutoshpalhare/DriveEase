@@ -62,7 +62,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 | 6 | Return flow, final invoices, partial/full payment ledger | 🟡 Core flow implemented; reports/refunds pending |
 | 7 | Security audit, obsolete route review and full end-to-end regression pass | ⏳ In progress |
 
-**Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, and owner-scoped vehicle/driver add, edit and activate/deactivate flows are implemented. CI now runs PHP syntax checks plus database-free lifecycle regression checks. Live-database and full end-to-end tests still need to be run before treating this as production-ready.
+**Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, owner-scoped vehicle/driver management, CSV export, and date-filtered monthly revenue and vehicle-performance reports are implemented. CI now runs PHP syntax checks plus database-free lifecycle regression checks. Live-database and full end-to-end tests still need to be run before treating this as production-ready.
 
 ---
 
@@ -570,7 +570,7 @@ What the other two cover: filters and pagination counts, XSS and SQL-injection p
 
 **Phase 5 – Management and dashboards.** Vehicle CRUD with safe image upload (type and size validation, generated filenames); driver management with activate/deactivate; customer list and profile; customer dashboard (active, upcoming, history, spend) and admin dashboard (fleet utilisation, today's pickups/returns, revenue, outstanding payments).
 
-**Phase 6 – Payments, invoices and reports.** Record payments (cash/UPI/card/bank), partial payments, refunds, payment-status updates; invoice and receipt pages that are print-friendly and downloadable; reports for bookings, customers, vehicles and revenue with date filters and CSV export.
+**Phase 6 – Payments, invoices and reports.** Manual payments (cash/UPI/card/bank), partial payments, payment-status updates, printable invoice view, fleet-scoped rental CSV export, and date-filtered monthly revenue/vehicle-performance reports are implemented. Refunds and broader booking/customer reports remain.
 
 **Phase 7 – Cleanup.** Remove Angular, W3.CSS, Bootstrap 3, the old jQuery builds and legacy session bridging; drop reliance on the legacy availability flags; add a `Content-Security-Policy`; finish documentation and a full regression pass.
 
