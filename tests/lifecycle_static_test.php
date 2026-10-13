@@ -51,6 +51,7 @@ $vehicleEdit = source('public/editvehicle.php');
 $driverEdit = source('public/editdriver.php');
 $export = source('public/export-rentals.php');
 $reports = source('public/admin-reports.php');
+$reports = source('public/admin-reports.php');
 
 fwrite(STDOUT, "Migration compatibility\n");
 check('booking cancellation columns are migrated', contains_all($migration, ["'cancelled_at'", "'cancel_reason'"]));
@@ -74,6 +75,9 @@ check('payments cannot exceed the outstanding balance', str_contains($adminRenta
 check('payment ledger and booking balance update together', contains_all($adminRentals, ['INSERT INTO payments', 'UPDATE rentedcars SET amount_paid = ?, payment_status = ?']));
 check('CSV export is admin-only and fleet-owner scoped', contains_all($export, ["require_role('admin')", 'cc.client_username = ?', 'Content-Disposition']));
 check('CSV export protects spreadsheet formulas', contains_all($export, ['csv_safe', 'spreadsheet formula execution']));
+check('reports require admin and validate date range', contains_all($reports, ["require_role('admin')", '$from > $to', 'createFromFormat']));
+check('reports aggregate only owner-scoped completed returns', contains_all($reports, ["r.booking_status = 'completed'", "r.return_status = 'R'", 'cc.client_username = ?', 'car_return_date']));
+check('reports include monthly and vehicle performance queries', contains_all($reports, ["DATE_FORMAT(r.car_return_date, '%Y-%m')", 'GROUP BY c.car_id']));
 check('reports require admin and validate date range', contains_all($reports, ["require_role('admin')", '$from > $to', 'createFromFormat']));
 check('reports aggregate only owner-scoped completed returns', contains_all($reports, ["r.booking_status = 'completed'", "r.return_status = 'R'", 'cc.client_username = ?', 'car_return_date']));
 check('reports include monthly and vehicle performance queries', contains_all($reports, ["DATE_FORMAT(r.car_return_date, '%Y-%m')", 'GROUP BY c.car_id']));
