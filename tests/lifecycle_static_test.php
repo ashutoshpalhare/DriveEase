@@ -39,6 +39,7 @@ function contains_all(string $haystack, array $needles): bool
     return true;
 }
 
+$security = source('includes/security.php');
 $migration = source('database/migrate.php');
 $booking = source('public/bookingconfirm.php');
 $cancellation = source('public/cancelbooking.php');
@@ -54,6 +55,8 @@ $reports = source('public/admin-reports.php');
 $customersPage = source('public/admin-customers.php');
 $calendarPage = source('public/admin-calendar.php');
 $reports = source('public/admin-reports.php');
+
+check('sensitive dynamic pages disable browser caching', contains_all($security, ["Cache-Control: no-store, private, max-age=0", "Pragma: no-cache", "Expires: 0"]));
 
 fwrite(STDOUT, "Migration compatibility\n");
 check('booking cancellation columns are migrated', contains_all($migration, ["'cancelled_at'", "'cancel_reason'"]));
