@@ -51,6 +51,7 @@ $vehicleEdit = source('public/editvehicle.php');
 $driverEdit = source('public/editdriver.php');
 $export = source('public/export-rentals.php');
 $reports = source('public/admin-reports.php');
+$customersPage = source('public/admin-customers.php');
 $reports = source('public/admin-reports.php');
 
 fwrite(STDOUT, "Migration compatibility\n");
@@ -78,6 +79,10 @@ check('CSV export protects spreadsheet formulas', contains_all($export, ['csv_sa
 check('reports require admin and validate date range', contains_all($reports, ["require_role('admin')", '$from > $to', 'createFromFormat']));
 check('reports aggregate only owner-scoped completed returns', contains_all($reports, ["r.booking_status = 'completed'", "r.return_status = 'R'", 'cc.client_username = ?', 'car_return_date']));
 check('reports include monthly and vehicle performance queries', contains_all($reports, ["DATE_FORMAT(r.car_return_date, '%Y-%m')", 'GROUP BY c.car_id']));
+check('customer directory requires admin access', str_contains($customersPage, "require_role('admin')"));
+check('customer directory scopes records to the fleet owner', str_contains($customersPage, 'cc.client_username = ?'));
+check('customer search uses prepared LIKE filters', str_contains($customersPage, 'LIKE ?'));
+check('customer history is limited and fleet-scoped', contains_all($customersPage, ['LIMIT 100', 'r.customer_username = ?', 'cc.client_username = ?']));
 check('reports require admin and validate date range', contains_all($reports, ["require_role('admin')", '$from > $to', 'createFromFormat']));
 check('reports aggregate only owner-scoped completed returns', contains_all($reports, ["r.booking_status = 'completed'", "r.return_status = 'R'", 'cc.client_username = ?', 'car_return_date']));
 check('reports include monthly and vehicle performance queries', contains_all($reports, ["DATE_FORMAT(r.car_return_date, '%Y-%m')", 'GROUP BY c.car_id']));
