@@ -24,6 +24,7 @@ $endInput = (string) ($_GET['end'] ?? $today);
 if ($dateError) {
     $start = $end = $today;
 }
+$carAvailable = car_is_available($id, $start, $end);
 
 $drivers = db_all(
     "SELECT d.driver_id, d.driver_name, d.driver_phone, d.driver_gender
@@ -55,6 +56,7 @@ render_header('Book ' . $car['car_name'], 'cars');
           <h1 class="h3 fw-bold mb-1">Complete your booking</h1>
           <p class="text-muted mb-4">Check your dates for conflicts, then choose a fare type and available driver.</p>
           <?php if ($dateError): ?><div class="alert alert-warning"><?= e($dateError) ?> Dates have been reset to today; please select your dates again.</div><?php endif; ?>
+          <?php if (!$carAvailable): ?><div class="alert alert-danger"><strong>Vehicle conflict:</strong> This car already has a confirmed or active booking overlapping the selected dates. Choose another date.</div><?php else: ?><div class="alert alert-success py-2">No vehicle conflict found for these dates. Availability will be checked again when you confirm.</div><?php endif; ?>
           <form method="post" action="<?= e(url('bookingconfirm.php')) ?>" data-once>
             <?= csrf_field() ?>
             <input type="hidden" name="car_id" value="<?= $id ?>">
@@ -93,7 +95,7 @@ render_header('Book ' . $car['car_name'], 'cars');
                 <?php if (!$drivers): ?><div class="form-text text-danger">No driver is currently available for these dates. Try another date or contact the fleet owner.</div><?php endif; ?>
               </div>
               <div class="col-12 d-grid mt-2">
-                <button class="btn btn-warning btn-lg fw-semibold" type="submit" <?= $drivers ? '' : 'disabled' ?>><i class="fa-solid fa-calendar-check me-2"></i>Confirm booking</button>
+                <button class="btn btn-warning btn-lg fw-semibold" type="submit" <?= ($drivers && $carAvailable) ? '' : 'disabled' ?>><i class="fa-solid fa-calendar-check me-2"></i>Confirm booking</button>
               </div>
             </div>
           </form>
