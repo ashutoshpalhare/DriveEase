@@ -64,6 +64,8 @@ fwrite(STDOUT, "\nBooking safeguards\n");
 check('booking submission is POST-only and CSRF-protected', contains_all($booking, ['if (!is_post())', 'csrf_check();']));
 check('inactive cars and drivers cannot be booked', contains_all($booking, ['car_id = ? AND is_active = 1', 'd.is_active = 1']));
 check('booking rejects overlapping blocking statuses', str_contains($booking, 'BLOCKING_STATUSES'));
+$bookingForm = source('public/booking.php');
+check('booking form prechecks vehicle conflicts and blocks unavailable cars', contains_all($bookingForm, ['car_is_available($id, $start, $end)', 'Vehicle conflict:', '($drivers && $carAvailable)']));
 check('cancellation is POST-only and CSRF-protected', contains_all($cancellation, ['if (!is_post())', 'csrf_check();']));
 check('cancellation checks customer ownership and confirmed status', contains_all($cancellation, ['customer_username', 'confirmed']));
 
