@@ -97,7 +97,7 @@ render_header('Book ' . $car['car_name'], 'cars');
                 <?php if (!$drivers): ?><div class="form-text text-danger">No driver is currently available for these dates. Try another date or contact the fleet owner.</div><?php endif; ?>
               </div>
               <div class="col-12 d-grid mt-2">
-                <button class="btn btn-warning btn-lg fw-semibold" type="submit" <?= ($drivers && $carAvailable) ? '' : 'disabled' ?>><i class="fa-solid fa-calendar-check me-2"></i>Confirm booking</button>
+                <button id="booking-confirm-button" class="btn btn-warning btn-lg fw-semibold" type="submit" <?= ($drivers && $carAvailable) ? '' : 'disabled' ?>><i class="fa-solid fa-calendar-check me-2"></i>Confirm booking</button>
               </div>
             </div>
           </form>
