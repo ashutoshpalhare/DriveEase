@@ -49,6 +49,7 @@ $vehicles = source('public/entercar.php');
 $drivers = source('public/enterdriver.php');
 $vehicleEdit = source('public/editvehicle.php');
 $driverEdit = source('public/editdriver.php');
+$export = source('public/export-rentals.php');
 
 fwrite(STDOUT, "Migration compatibility\n");
 check('booking cancellation columns are migrated', contains_all($migration, ["'cancelled_at'", "'cancel_reason'"]));
@@ -70,6 +71,8 @@ check('payment recording is scoped to the fleet owner', contains_all($adminRenta
 check('payments require a completed, returned rental', contains_all($adminRentals, ["booking_status'] !== 'completed'", "return_status'] !== 'R'"]));
 check('payments cannot exceed the outstanding balance', str_contains($adminRentals, '$amount > $outstanding'));
 check('payment ledger and booking balance update together', contains_all($adminRentals, ['INSERT INTO payments', 'UPDATE rentedcars SET amount_paid = ?, payment_status = ?']));
+check('CSV export is admin-only and fleet-owner scoped', contains_all($export, ["require_role('admin')", 'cc.client_username = ?', 'Content-Disposition']));
+check('CSV export protects spreadsheet formulas', contains_all($export, ['csv_safe', 'spreadsheet formula execution']));
 
 fwrite(STDOUT, "\nFleet management safeguards\n");
 check('vehicle creation is admin-only and CSRF-protected', contains_all($vehicles, ["require_role('admin')", 'csrf_check();']));
