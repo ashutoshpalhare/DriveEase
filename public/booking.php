@@ -53,7 +53,7 @@ render_header('Book ' . $car['car_name'], 'cars');
       <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
           <h1 class="h3 fw-bold mb-1">Complete your booking</h1>
-          <p class="text-muted mb-4">Choose your dates, fare type and an available driver.</p>
+          <p class="text-muted mb-4">Check your dates for conflicts, then choose a fare type and available driver.</p>
           <?php if ($dateError): ?><div class="alert alert-warning"><?= e($dateError) ?> Dates have been reset to today; please select your dates again.</div><?php endif; ?>
           <form method="post" action="<?= e(url('bookingconfirm.php')) ?>" data-once>
             <?= csrf_field() ?>
