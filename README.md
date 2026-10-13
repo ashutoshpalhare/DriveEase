@@ -93,9 +93,10 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 - Add and edit drivers with validated licence/contact details.
 - Activate or deactivate drivers without deleting records; deactivation is blocked while a trip is active.
 - Fleet lists and edit actions are scoped to the signed-in fleet owner; status-changing forms require CSRF tokens.
+- Export the full fleet rental ledger to CSV for spreadsheet reporting; exports are owner-scoped and protect spreadsheet cells from formula injection.
 
 ### Remaining work
-Live-database and end-to-end tests, further audit of inherited utility routes, operational reports, refunds, and payment-gateway integration remain planned. Manual payment recording is not a payment gateway. See the [Roadmap](#roadmap).
+Live-database and end-to-end tests, further audit of inherited utility routes, advanced date-filtered reports, refunds, and payment-gateway integration remain planned. Manual payment recording is not a payment gateway. See the [Roadmap](#roadmap).
 
 ---
 
