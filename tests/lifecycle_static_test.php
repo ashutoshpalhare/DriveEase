@@ -55,6 +55,8 @@ $customersPage = source('public/admin-customers.php');
 $calendarPage = source('public/admin-calendar.php');
 $reports = source('public/admin-reports.php');
 
+check('booking date edits require a fresh availability check', contains_all($bookingForm, ['id="availability-check-form"', 'id="availability-stale"', 'id="booking-confirm-button"']) && contains_all($appJs, ['requireAvailabilityRefresh', 'checkPickup.value = pickup.value', 'confirmButton.disabled = true']));
+
 fwrite(STDOUT, "Migration compatibility\n");
 check('booking cancellation columns are migrated', contains_all($migration, ["'cancelled_at'", "'cancel_reason'"]));
 check('vehicle and driver active flags are migrated', contains_all($migration, ["add_col('cars', 'is_active'", "add_col('driver', 'is_active'"]));
@@ -65,6 +67,7 @@ check('booking submission is POST-only and CSRF-protected', contains_all($bookin
 check('inactive cars and drivers cannot be booked', contains_all($booking, ['car_id = ? AND is_active = 1', 'd.is_active = 1']));
 check('booking rejects overlapping blocking statuses', str_contains($booking, 'BLOCKING_STATUSES'));
 $bookingForm = source('public/booking.php');
+$appJs = source('public/assets/js/app.js');
 check('booking form prechecks vehicle conflicts and blocks unavailable cars', contains_all($bookingForm, ['car_is_available($id, $start, $end)', 'Vehicle conflict:', '($drivers && $carAvailable)']));
 check('booking form refreshes checks for chosen dates and excludes conflicting drivers', contains_all($bookingForm, ['id="check_start"', 'name="start"', 'NOT EXISTS (', 'r.driver_id = d.driver_id', 'r.rent_start_date <= ? AND r.rent_end_date >= ?']));
 check('cancellation is POST-only and CSRF-protected', contains_all($cancellation, ['if (!is_post())', 'csrf_check();']));
