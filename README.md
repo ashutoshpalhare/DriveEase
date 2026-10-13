@@ -74,6 +74,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 - Responsive homepage: hero with date/type search, category tiles with live counts, popular cars, "how it works", live statistics, contact form
 - Car listing with keyword search; filters for category, fuel, gearbox, minimum seats and maximum price per day; sorting; pagination
 - Per-date availability badges (Available / Booked) based on real booking date overlap
+- Booking form checks vehicle conflicts and filters out drivers with overlapping reservations; final submission rechecks both under database locks
 - Car details: specifications, AC / non-AC price table (per day and per km), availability checker, upcoming booked dates, booking call-to-action
 - FAQ page
 
@@ -93,6 +94,8 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 - Add and edit drivers with validated licence/contact details.
 - Activate or deactivate drivers without deleting records; deactivation is blocked while a trip is active.
 - Fleet lists and edit actions are scoped to the signed-in fleet owner; status-changing forms require CSRF tokens.
+- Booking calendar shows upcoming confirmed/active rentals and vehicle availability for a selectable range of up to 90 days.
+- Customer directory and rental history, fleet reports, and CSV rental exports are available from the owner workspace.
 - Export the full fleet rental ledger to CSV for spreadsheet reporting; exports are owner-scoped and protect spreadsheet cells from formula injection.
 
 ### Remaining work
