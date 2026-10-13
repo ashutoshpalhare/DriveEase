@@ -62,7 +62,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 | 6 | Return flow, final invoices, partial/full payment ledger | 🟡 Core flow implemented; reports/refunds pending |
 | 7 | Security audit, obsolete route review and full end-to-end regression pass | ⏳ In progress |
 
-**Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, owner-scoped vehicle/driver management, CSV export, and date-filtered monthly revenue and vehicle-performance reports are implemented. CI now runs PHP syntax checks plus database-free lifecycle regression checks. Live-database and full end-to-end tests still need to be run before treating this as production-ready.
+**Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, owner-scoped vehicle/driver management, CSV export, date-filtered monthly revenue/vehicle-performance reports, and a fleet-scoped customer directory with booking history are implemented. CI now runs PHP syntax checks plus database-free lifecycle regression checks. Live-database and full end-to-end tests still need to be run before treating this as production-ready.
 
 ---
 
