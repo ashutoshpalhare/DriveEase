@@ -41,6 +41,10 @@ function send_security_headers(): void
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: strict-origin-when-cross-origin');
     header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
+    // Rental history, customer details and invoices should not remain in shared browser caches.
+    header('Cache-Control: no-store, private, max-age=0');
+    header('Pragma: no-cache');
+    header('Expires: 0');
 }
 
 /* ---------- CSRF ---------- */
