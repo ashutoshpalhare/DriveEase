@@ -17,6 +17,7 @@ function nav_links(): array
         $links['drivers']  = ['Drivers', 'enterdriver.php', 'fa-id-card'];
         $links['rentals']  = ['Rentals & payments', 'admin-rentals.php', 'fa-receipt'];
         $links['customers'] = ['Customers', 'admin-customers.php', 'fa-users'];
+        $links['calendar']  = ['Booking calendar', 'admin-calendar.php', 'fa-calendar-days'];
     }
     return $links;
 }
