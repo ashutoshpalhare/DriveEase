@@ -52,6 +52,7 @@ $driverEdit = source('public/editdriver.php');
 $export = source('public/export-rentals.php');
 $reports = source('public/admin-reports.php');
 $customersPage = source('public/admin-customers.php');
+$calendarPage = source('public/admin-calendar.php');
 $reports = source('public/admin-reports.php');
 
 fwrite(STDOUT, "Migration compatibility\n");
@@ -83,6 +84,9 @@ check('customer directory requires admin access', str_contains($customersPage, "
 check('customer directory scopes records to the fleet owner', str_contains($customersPage, 'cc.client_username = ?'));
 check('customer search uses prepared LIKE filters', str_contains($customersPage, 'LIKE ?'));
 check('customer history is limited and fleet-scoped', contains_all($customersPage, ['LIMIT 100', 'r.customer_username = ?', 'cc.client_username = ?']));
+check('booking calendar requires admin and scopes fleet vehicles', contains_all($calendarPage, ["require_role('admin')", 'cc.client_username=?']));
+check('booking calendar filters blocking statuses and date overlap', contains_all($calendarPage, ["IN ('confirmed','active')", 'r.rent_start_date<=?', 'r.rent_end_date>=?']));
+check('booking calendar validates a maximum 90-day date range', contains_all($calendarPage, ['DateTimeImmutable::createFromFormat', '> 90']));
 check('reports require admin and validate date range', contains_all($reports, ["require_role('admin')", '$from > $to', 'createFromFormat']));
 check('reports aggregate only owner-scoped completed returns', contains_all($reports, ["r.booking_status = 'completed'", "r.return_status = 'R'", 'cc.client_username = ?', 'car_return_date']));
 check('reports include monthly and vehicle performance queries', contains_all($reports, ["DATE_FORMAT(r.car_return_date, '%Y-%m')", 'GROUP BY c.car_id']));
