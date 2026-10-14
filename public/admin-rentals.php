@@ -76,6 +76,7 @@ if (is_post()) {
             $paid = round((float)$b['amount_paid'], 2);
             $outstanding = round($total - $paid, 2);
             $amount = round((float)$amountRaw, 2);
+            if ($amount <= 0) throw new DomainException('Payment must be at least ₹0.01 after rounding.');
             if ($outstanding <= 0) throw new DomainException('This invoice is already fully paid.');
             if ($amount > $outstanding) throw new DomainException('Payment exceeds the outstanding balance of ' . money($outstanding) . '.');
 
