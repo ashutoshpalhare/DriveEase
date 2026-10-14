@@ -62,6 +62,7 @@ fwrite(STDOUT, "Migration compatibility\n");
 check('booking cancellation columns are migrated', contains_all($migration, ["'cancelled_at'", "'cancel_reason'"]));
 check('vehicle and driver active flags are migrated', contains_all($migration, ["add_col('cars', 'is_active'", "add_col('driver', 'is_active'"]));
 check('payment ledger is created by migration', str_contains($migration, 'CREATE TABLE IF NOT EXISTS payments'));
+check('migration repairs either missing rental index independently', contains_all($migration, ["INDEX_NAME='idx_car_dates'", "INDEX_NAME='idx_status'", "ADD INDEX idx_car_dates (car_id, rent_start_date, rent_end_date)", "ADD INDEX idx_status (booking_status)"]));
 
 fwrite(STDOUT, "\nBooking safeguards\n");
 check('booking submission is POST-only and CSRF-protected', contains_all($booking, ['if (!is_post())', 'csrf_check();']));
