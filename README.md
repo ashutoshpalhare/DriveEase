@@ -8,7 +8,7 @@ DriveEase is an in-place upgrade of [Patna-Car-Rental](https://github.com/nikhil
 |---|---|
 | **Stack** | PHP 8.x · MySQL / MariaDB · Bootstrap 5 · JavaScript · Font Awesome · SweetAlert2 |
 | **Architecture** | Plain PHP, modular `includes/`, prepared statements, no framework, no Composer |
-| **Status** | Phases 1–3 of 7 complete (see [Project status](#project-status)) |
+| **Status** | Core workflows implemented; final verification in progress (see [Project status](#project-status)) |
 
 **Guides:** [🖥️ XAMPP setup](docs/XAMPP.md) · [🌐 Hosting (cPanel, Ubuntu + Apache, Ubuntu + Nginx)](docs/HOSTING.md)
 
@@ -60,7 +60,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 | 4 | Booking: date selection, server-side fare calculation, driver assignment, transactional availability checks, statuses and cancellation | ✅ Core flow implemented |
 | 5 | Owner-scoped vehicle/driver management, customer history and fleet rental ledger | 🟡 Core flows implemented; end-to-end verification pending |
 | 6 | Return flow, final invoices, partial/full payment ledger | 🟡 Core flow implemented; reports/refunds pending |
-| 7 | Security audit, obsolete route review and full end-to-end regression pass | ⏳ In progress |
+| 7 | Security audit, obsolete route review, documentation and final regression pass | 🟡 Final verification in progress |
 
 **Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, owner-scoped vehicle/driver management, CSV export, date-filtered monthly revenue/vehicle-performance reports, and a fleet-scoped customer directory with booking history are implemented. CI now runs PHP syntax checks plus database-free lifecycle regression checks. Live-database and full end-to-end tests still need to be run before treating this as production-ready.
 
@@ -339,17 +339,14 @@ Fleet owners are scoped to **their own** cars and drivers (via `clientcars` and 
 | Errors | In `production`, exceptions are logged and users see a generic message — no SQL or stack traces |
 | Hardening | `config/`, `includes/`, `database/`, `tests/` are not web-reachable; migration and account tools refuse to run outside the CLI; optional `ALLOW_ADMIN_SIGNUP=false` closes public fleet-owner signup |
 
-### Known gaps until Phases 4–6 land
+### Remaining production checks
 
-These apply to the **legacy pages** only (`booking.php`, `bookingconfirm.php`, `returncar.php`, `prereturncar.php`, `printbill.php`, `mybookings.php`, `entercar*.php`, `enterdriver*.php`, `clientview.php`):
+- Run the database-backed foundation and HTTP suites against a disposable development database, then verify the full booking-to-payment workflow in a browser.
+- Add a Content-Security-Policy after checking the inline scripts and styles used by the current UI.
+- Revoke the Google Maps API key found in the original repository's Git history; removing it from current files does not invalidate the old key.
+- Audit logs and two-factor authentication are not implemented; treat these as future hardening, not as completed features.
 
-- Raw / concatenated SQL (injectable)
-- No CSRF tokens on their forms
-- No ownership checks: a logged-in user can open another user's booking by changing `?id=`
-- `printbill.php` trusts the fare posted from the browser
-- Car-image upload trusts the client-supplied filename and MIME type
-
-Also not yet in place anywhere: a `Content-Security-Policy` header, audit logging, and two-factor authentication.
+The core booking, cancellation, return, invoice, payment, vehicle and driver management routes now use server-side validation, CSRF protection where state changes occur, prepared database helpers and ownership/fleet scoping. CI's static checks do not replace live MySQL or browser verification.
 
 ### Action required
 
@@ -376,7 +373,7 @@ booking.start <= requested.end  AND  booking.end >= requested.start
 - Cancelled and completed bookings never block.
 - With no dates chosen, the badge reflects *today*.
 
-### Pricing (legacy behaviour today)
+### Current pricing rules
 
 Each car has four rates: **AC / non-AC × per day / per km**.
 
@@ -384,20 +381,13 @@ Each car has four rates: **AC / non-AC × per day / per km**.
 - `km` charge type: `kilometres driven × per-km rate`, entered at return
 - **Late return**: ₹200 per extra day beyond the booked end date, added to the final amount
 
-### Planned in Phase 4
+### Implemented workflow
 
-- Fare calculated **server-side only** from the stored rates (never from a posted form value)
-- An *estimated* fare shown at booking; per-km bookings finalised at return
-- Date **and time** selection, AC/non-AC choice, driver assignment from the car owner's available drivers
-- Availability re-checked **inside a database transaction** (row locked) so two customers cannot double-book
-- Booking status flow: `pending → confirmed → active → completed`, or `cancelled`
-- Customer cancellation before pickup, with a reason
-
-### Planned in Phase 6
-
-- Payment status: `unpaid → partial → paid` (and `refunded`) driven by the `payments` ledger
-- Printable/PDF invoice and receipt with invoice number `DE-######`
-- Reports: bookings, customers, vehicles, revenue
+- Daily and per-kilometre fares are calculated server-side from saved vehicle rates; per-kilometre rentals are finalised on return.
+- Availability is checked again inside a transaction during booking; confirmed and active bookings block overlapping dates.
+- Booking states include `confirmed`, `active`, `completed` and `cancelled`; online cancellation is available before pickup.
+- Payments support partial and full manual recording with a ledger; invoices are printable, and fleet-scoped CSV export and revenue/vehicle reports are available.
+- Date/time-of-day booking selection, refunds, audit logs and two-factor authentication are not implemented.
 
 ---
 
@@ -569,13 +559,13 @@ What the other two cover: filters and pagination counts, XSS and SQL-injection p
 
 ## Roadmap
 
-**Phase 4 – Booking (core implemented).** Date selection, AC/non-AC choice, server-side fare estimate, driver assignment and transactional double-booking protection are in place. Time selection and customer cancellation remain.
+**Booking workflow — implemented.** Date selection, AC/non-AC choice, server-side fare calculation, driver assignment, transactional availability checks, status transitions and pre-pickup cancellation are in place. Time-of-day selection remains out of scope.
 
-**Phase 5 – Management and dashboards.** Vehicle CRUD with safe image upload (type and size validation, generated filenames); driver management with activate/deactivate; customer list and profile; customer dashboard (active, upcoming, history, spend) and admin dashboard (fleet utilisation, today's pickups/returns, revenue, outstanding payments).
+**Management — core implemented.** Owner-scoped vehicle/driver management, customer directory/history, booking calendar and rental dashboard are available. A separate customer spend dashboard is not implemented.
 
-**Phase 6 – Payments, invoices and reports.** Manual payments (cash/UPI/card/bank), partial payments, payment-status updates, printable invoice view, fleet-scoped rental CSV export, and date-filtered monthly revenue/vehicle-performance reports are implemented. Refunds and broader booking/customer reports remain.
+**Payments and reports — core implemented.** Manual partial/full payments, printable invoices, fleet-scoped CSV export, date-filtered revenue and vehicle-performance reports are implemented. Refunds and broader analytics remain future work.
 
-**Phase 7 – Cleanup.** Remove Angular, W3.CSS, Bootstrap 3, the old jQuery builds and legacy session bridging; drop reliance on the legacy availability flags; add a `Content-Security-Policy`; finish documentation and a full regression pass.
+**Finalization.** Complete live-database and browser regression testing, verify deployment configuration, consider CSP after auditing inline assets, and document any remaining gaps. Do not claim production readiness until those checks pass.
 
 ---
 
@@ -584,7 +574,7 @@ What the other two cover: filters and pagination counts, XSS and SQL-injection p
 | Original | Now |
 |---|---|
 | Plaintext passwords in `varchar(20)` | bcrypt hashes in `varchar(255)`, auto-rehash |
-| String-built SQL in ~17 files | Prepared statements (all rebuilt code; legacy pages pending) |
+| String-built SQL in ~17 files | Prepared-statement helpers on rebuilt booking, return, payment and management routes; verify remaining legacy utilities during final audit |
 | Database credentials hard-coded as `root` / empty password | `.env` configuration, dedicated DB user |
 | Google Maps API key committed | Removed (revoke it — it is in history) |
 | No CSRF, no validation | CSRF tokens and a validation layer |
