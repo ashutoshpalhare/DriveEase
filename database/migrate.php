@@ -89,8 +89,17 @@ if (!col_exists('rentedcars', '_migrated')) {
     db()->query('ALTER TABLE rentedcars ADD COLUMN `_migrated` TINYINT(1) NOT NULL DEFAULT 1');
     $log('legacy bookings backfilled (returned => completed + paid)');
 }
-$idx = db_value("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME='rentedcars' AND INDEX_NAME='idx_car_dates'");
-if (!$idx) { db()->query('ALTER TABLE rentedcars ADD INDEX idx_car_dates (car_id, rent_start_date, rent_end_date), ADD INDEX idx_status (booking_status)'); $log('+ index idx_car_dates'); }
+// Check each index independently so a partially applied migration can recover.
+$carDatesIndex = (int) db_value("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME='rentedcars' AND INDEX_NAME='idx_car_dates'");
+if (!$carDatesIndex) {
+    db()->query('ALTER TABLE rentedcars ADD INDEX idx_car_dates (car_id, rent_start_date, rent_end_date)');
+    $log('+ index idx_car_dates');
+}
+$statusIndex = (int) db_value("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME='rentedcars' AND INDEX_NAME='idx_status'");
+if (!$statusIndex) {
+    db()->query('ALTER TABLE rentedcars ADD INDEX idx_status (booking_status)');
+    $log('+ index idx_status');
+}
 
 // ---- 5. New tables -------------------------------------------------------
 echo "[5] New tables\n";
