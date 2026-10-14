@@ -30,6 +30,9 @@ if (is_post()) {
                 $raw = $_POST['distance'] ?? '';
                 if (!is_string($raw) || !is_numeric($raw) || (float)$raw <= 0 || (float)$raw > 100000) throw new DomainException('Enter a valid trip distance between 0.1 and 100,000 km.');
                 $distance = round((float)$raw, 1);
+                if ($distance < 0.1) {
+                    throw new DomainException('Trip distance must be at least 0.1 km.');
+                }
                 $base = round((float)$b['fare'] * $distance, 2);
             } elseif ($b['charge_type'] === 'days') {
                 $base = round((float)$b['fare'] * $days, 2);
