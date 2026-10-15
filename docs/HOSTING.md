@@ -4,8 +4,8 @@ How to put DriveEase on a real server: shared hosting (cPanel), or your own Ubun
 
 <a id="legacy-warning"></a>
 
-> ### Read this first: the legacy-pages warning
-> The booking, return, billing, history, fleet and driver pages are **still the original, insecure legacy pages** until Phases 4–6 are finished (see the [roadmap](../README.md#roadmap)). They are behind the new login, but they still contain raw SQL and have no CSRF or ownership checks. **Use a hosted copy for staging, demos and testing with disposable data. Do not put real customer data or payments on it yet.**
+> ### Read this first: deployment status
+> The main booking, cancellation, return, invoice, payment, fleet-management and reporting routes have been rebuilt with prepared database helpers, server-side validation, CSRF checks for state-changing requests, role checks and fleet/customer ownership scoping. However, **live database and browser end-to-end verification is still pending**. Treat this repository as a development/staging build; do not use real customer data or payments until the full workflow and deployment checks pass. See [Project status](../README.md#project-status).
 
 > ### How this guide was verified
 > Tested on **Ubuntu 24.04** with real servers running **Apache 2.4.58 + PHP 8.3**, **Nginx 1.24 + PHP-FPM 8.3**, and **MariaDB 10.11**, covering four layouts: Apache sub-folder, Apache virtual host with `public/` as the root, a **cPanel-style layout** (reproduced on Apache), and Nginx. Each passed the bundled `tests/deploy_check.sh` (every asset loads, database connects, login works, secrets are unreachable). The permission scheme, force-HTTPS rule, and a backup-and-restore round trip were also run.
@@ -261,7 +261,7 @@ sudo find /var/www/driveease -type f -exec chmod 640 {} \;
 sudo chmod 640 /var/www/driveease/.env
 ```
 
-> Phase 5 adds car-image uploads. When it lands, the upload folder will additionally need to be writable by `www-data`.
+> Vehicle photos are mapped to externally hosted Unsplash images; the application does not require a writable local car-image upload directory.
 
 ### 5.4 Configure the virtual host
 
@@ -499,7 +499,7 @@ DriveEase upgrades are designed to be safe to repeat:
 | `php: command not found` or the wrong version over SSH | Use the full path to the right PHP binary ([4.5](#45-load-the-database)) |
 | Wrong times in bookings | The app uses `Asia/Kolkata`. Change `date_default_timezone_set` in `includes/bootstrap.php` for another zone |
 | "Too many failed attempts" | The 5-attempt, 15-minute lockout. Wait, or run `DELETE FROM login_attempts;` |
-| Everything worked, then the site was hacked or defaced | Restore from a clean backup, rotate the DB password, change all account passwords, and review whether the [legacy pages](#legacy-warning) were exposed |
+| Everything worked, then the site was hacked or defaced | Restore from a clean backup, rotate the DB password, change all account passwords, inspect access/error logs, and check for unexpected file or database changes |
 
 ## Production checklist
 
@@ -512,4 +512,4 @@ DriveEase upgrades are designed to be safe to repeat:
 - [ ] `./tests/deploy_check.sh https://your-domain/` reports `0 failed`
 - [ ] Daily database backups, copied off the server, restore tested
 - [ ] Old Google Maps API key revoked (it remains in git history)
-- [ ] Only disposable data until Phases 4–6 replace the legacy pages
+- [ ] Live MySQL and browser end-to-end tests pass; do not use real customer data until verified
