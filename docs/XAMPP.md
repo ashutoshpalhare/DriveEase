@@ -257,7 +257,7 @@ On macOS/Linux edit `/etc/hosts` with `sudo`.
 If you already run the original *Patna-Car-Rental* on XAMPP, your data is kept. Do these in order:
 
 1. **Back up the database.** phpMyAdmin → select `carrental` → **Export** → **Quick** → **Export**. Keep that `.sql` file safe. Also copy your whole `htdocs\<old folder>` somewhere as a backup.
-2. **Check any images you uploaded.** Car photos live in `assets\img\cars\`. In the new layout they belong in `public\assets\img\cars\`. Copy any images that are not already in the new project.
+2. **Vehicle photos are remote.** The current build maps existing car-image filenames to Unsplash image URLs, so no local car-photo upload/copy step is required. An internet connection is needed for those photos to load.
 3. **Install the new files** as in [step 3](#3-copy-the-project) (a new folder is cleaner than overwriting the old one).
 4. **Create `.env`** ([step 5](#5-create-the-env-file)). Use the same database name your old `connection.php` used (normally `carrental`, user `root`, empty password).
 5. **Run the migration** ([step 6](#6-run-the-migration)). It hashes the existing plaintext passwords, so **everyone keeps the password they already had.**
