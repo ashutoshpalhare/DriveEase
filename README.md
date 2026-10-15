@@ -265,7 +265,7 @@ The original schema is kept as-is and extended. No table is recreated.
 `php database/migrate.php` runs five steps, each guarded so it is safe to repeat:
 
 1. **Accounts** — widens password/e-mail/name/address columns (the originals were `varchar(20)` and `varchar(25)`), then replaces every plaintext password with a bcrypt hash. Existing passwords keep working.
-2. **Vehicles** — adds category, seats, transmission, fuel type, description and an active flag. Existing cars are categorised from their names (Hatchback / Sedan / MPV / SUV), with seats and fuel inferred. **These are best-effort values; review them in the vehicle editor when it lands in Phase 5.**
+2. **Vehicles** — adds category, seats, transmission, fuel type, description and an active flag. Existing cars are categorised from their names (Hatchback / Sedan / MPV / SUV), with seats and fuel inferred. **These are best-effort values; review them in the vehicle editor.**
 3. **Drivers and feedback** — adds an active flag; gives `feedback` a primary key and timestamp; widens `feedback.message` (was 150 characters) and `cars.car_img`.
 4. **Bookings** — adds time, AC type, booking status, payment status and amounts. Existing bookings are backfilled once: returned (`R`) → `completed` + `paid`; not returned (`NR`) → `confirmed` + `unpaid`. A marker column `_migrated` records that the backfill ran. An index on `(car_id, rent_start_date, rent_end_date)` speeds up availability checks.
 5. **New tables** — creates `payments` and `login_attempts`, and writes one ledger row per settled historic booking.
@@ -276,7 +276,7 @@ After migrating the original sample data you should see 12 cars, 12 bookings, 11
 
 ### Legacy columns kept for compatibility
 
-`rentedcars.return_status` and `cars.car_availability` / `driver.driver_availability` are still written by the legacy pages. New code decides availability from booking dates and `booking_status`, not from these flags. They are removed or derived in Phase 7.
+`rentedcars.return_status` and `cars.car_availability` / `driver.driver_availability` are retained for compatibility with the original schema. Current rebuilt routes use booking dates and `booking_status` for availability decisions; confirm any remaining compatibility writes during live regression testing.
 
 ---
 
@@ -295,7 +295,7 @@ The sample data ships with four accounts. All have the password **`root`**, whic
 
 ### Account administration (command line)
 
-Until the in-app password and user screens arrive in Phase 5, manage accounts with `database/user.php` (CLI only):
+Manage accounts with `database/user.php` (CLI only):
 
 ```bash
 php database/user.php list
@@ -405,7 +405,7 @@ driveease/
 │   ├── contact.php            Contact-form handler
 │   ├── faq.php                FAQ
 │   ├── connection.php         Legacy shim → secure DB layer
-│   ├── booking.php … clientview.php   Legacy pages, replaced in Phases 4–6
+│   ├── booking.php … clientview.php   Booking and fleet routes rebuilt; old entry points redirect or are retired
 │   ├── customerlogin.php, clientlogin.php, customersignup.php, clientsignup.php
 │   │                          301 redirects to the new pages (old links keep working)
 │   └── assets/
@@ -533,7 +533,7 @@ What the other two cover: filters and pagination counts, XSS and SQL-injection p
 - [ ] `.env` readable only by the web user (`chmod 640`)
 - [ ] PHP: `display_errors=Off`, errors logged to a file outside the web root
 - [ ] Database backups scheduled
-- [ ] Remaining legacy vehicle/driver management and utility pages audited and secured before public deployment
+- [ ] Review remaining compatibility shims and legacy frontend assets; confirm all state-changing routes require CSRF and correct role/ownership checks
 - [ ] `tests/` and `database/` not reachable from the web (automatic with option A/B)
 
 ---
@@ -574,7 +574,7 @@ What the other two cover: filters and pagination counts, XSS and SQL-injection p
 | Original | Now |
 |---|---|
 | Plaintext passwords in `varchar(20)` | bcrypt hashes in `varchar(255)`, auto-rehash |
-| String-built SQL in ~17 files | Prepared-statement helpers on rebuilt booking, return, payment and management routes; verify remaining legacy utilities during final audit |
+| String-built SQL in ~17 original files | Prepared-statement helpers used by rebuilt booking, return, payment and management routes; continue auditing compatibility shims and any inherited utility code |
 | Database credentials hard-coded as `root` / empty password | `.env` configuration, dedicated DB user |
 | Google Maps API key committed | Removed (revoke it — it is in history) |
 | No CSRF, no validation | CSRF tokens and a validation layer |
