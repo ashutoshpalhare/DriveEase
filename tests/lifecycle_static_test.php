@@ -58,6 +58,10 @@ $reports = source('public/admin-reports.php');
 
 check('sensitive dynamic pages disable browser caching', contains_all($security, ["Cache-Control: no-store, private, max-age=0", "Pragma: no-cache", "Expires: 0"]));
 
+$apache = source('.htaccess');
+check('Apache disables directory listings and routes the root into public/', contains_all($apache, ['Options -Indexes', 'RewriteEngine On', 'RewriteRule ^$ public/ [L]', 'RewriteRule ^(.*)$ public/$1 [L]']));
+check('Apache blocks dotfiles and private application directories', contains_all($apache, ['RewriteRule (^|/)\\. - [F,L,NC]', 'RewriteRule ^(?:config|database|includes|tests|\\.github)(?:/|$) - [F,L,NC]']));
+
 fwrite(STDOUT, "Migration compatibility\n");
 check('booking cancellation columns are migrated', contains_all($migration, ["'cancelled_at'", "'cancel_reason'"]));
 check('vehicle and driver active flags are migrated', contains_all($migration, ["add_col('cars', 'is_active'", "add_col('driver', 'is_active'"]));
