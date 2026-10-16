@@ -56,7 +56,7 @@ function base_path(): string
     if ($base === null) {
         $pub  = realpath(__DIR__ . '/../public');
         $root = realpath((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''));
-        $base = ($root && $pub && str_starts_with($pub, $root)) ? str_replace('\\\\', '/', substr($pub, strlen($root))) : '';
+        $base = ($root && $pub && str_starts_with($pub, $root)) ? str_replace('\\', '/', substr($pub, strlen($root))) : '';
     }
     return $base;
 }
