@@ -39,6 +39,9 @@ function contains_all(string $haystack, array $needles): bool
     return true;
 }
 
+$helpers = source('includes/helpers.php');
+check('Windows document-root paths normalize backslashes for asset URLs', str_contains($helpers, "str_replace('\\\\', '/'") );
+
 $security = source('includes/security.php');
 $migration = source('database/migrate.php');
 $booking = source('public/bookingconfirm.php');
