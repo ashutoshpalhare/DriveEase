@@ -23,7 +23,25 @@ function db(): mysqli
 function db_run(string $sql, array $params = []): mysqli_stmt
 {
     $stmt = db()->prepare($sql);
-    $stmt->execute($params === [] ? null : array_values($params));
+
+    if ($params !== []) {
+        $values = array_values($params);
+        $types = '';
+        foreach ($values as $value) {
+            $types .= is_int($value) ? 'i' : (is_float($value) ? 'd' : 's');
+        }
+
+        // Use bind_param() + execute() for compatibility with PHP versions
+        // where mysqli_stmt::execute() does not accept a parameter array.
+        $bindArgs = [$types];
+        foreach ($values as $key => &$value) {
+            $bindArgs[] = &$value;
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bindArgs);
+        unset($value);
+    }
+
+    $stmt->execute();
     return $stmt;
 }
 
