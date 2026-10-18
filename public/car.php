@@ -82,4 +82,4 @@ render_header($car['car_name'], 'cars');
     </div>
   </div>
 </div>
-<?php render_footer();
+</div></section>\n<?php render_footer();
