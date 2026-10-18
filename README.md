@@ -8,11 +8,11 @@ DriveEase is an in-place upgrade of [Patna-Car-Rental](https://github.com/nikhil
 |---|---|
 | **Stack** | PHP 8.x · MySQL / MariaDB · Bootstrap 5 · JavaScript · Font Awesome · SweetAlert2 |
 | **Architecture** | Plain PHP, modular `includes/`, prepared statements, no framework, no Composer |
-| **Status** | Core workflows implemented; final verification in progress (see [Project status](#project-status)) |
+| **Status** | Core workflows implemented; cinematic public-site redesign in review; final local XAMPP and end-to-end verification still required (see [Project status](#project-status)) |
 
 **Guides:** [🖥️ XAMPP setup](docs/XAMPP.md) · [🌐 Hosting (cPanel, Ubuntu + Apache, Ubuntu + Nginx)](docs/HOSTING.md)
 
-![Homepage](docs/screenshots/home-desktop.png)
+![Homepage](docs/screenshots/home-desktop.png)\n\n> **Current UI update:** the `feat/cinematic-public-experience` branch introduces a cinematic automotive homepage and a charcoal/amber visual system. Screenshots in this README may show the earlier interface until refreshed after local review.
 
 <p>
   <img src="docs/screenshots/cars-desktop.png" width="49%" alt="Car search with filters">
@@ -56,13 +56,13 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 |---|---|---|
 | 1 | Analysis of the original code and database | ✅ Done |
 | 2 | Secure foundation: config, prepared-statement DB layer, sessions, CSRF, validation, role auth, additive DB migration | ✅ Done |
-| 3 | `public/` web root, Bootstrap 5 UI, homepage, car search/filter/details, availability checking, unified login and registration | ✅ Done |
+| 3 | `public/` web root, Bootstrap 5 UI, car search/filter/details, availability checking, unified login and registration | ✅ Done |\n| 3.1 | Cinematic public experience: hero, date/category search, category tiles, featured fleet, booking steps, fleet-owner CTA and shared dark/amber theme | 🟡 Implemented on `feat/cinematic-public-experience`; XAMPP visual regression pending |
 | 4 | Booking: date selection, server-side fare calculation, driver assignment, transactional availability checks, statuses and cancellation | ✅ Core flow implemented |
 | 5 | Owner-scoped vehicle/driver management, customer history and fleet rental ledger | 🟡 Core flows implemented; end-to-end verification pending |
 | 6 | Return flow, final invoices, partial/full payment ledger | 🟡 Core flow implemented; reports/refunds pending |
 | 7 | Security audit, obsolete route review, documentation and final regression pass | 🟡 Final verification in progress |
 
-**Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, owner-scoped vehicle/driver management, CSV export, date-filtered monthly revenue/vehicle-performance reports, and a fleet-scoped customer directory with booking history are implemented. CI now runs PHP syntax checks plus database-free lifecycle regression checks. Live-database and full end-to-end tests still need to be run before treating this as production-ready.
+**Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, owner-scoped vehicle/driver management, CSV export, date-filtered revenue/vehicle-performance reports, and a fleet-scoped customer directory with booking history are implemented. The cinematic public redesign is on `feat/cinematic-public-experience` and is proposed in draft PR #2. Automated PHP syntax and database-free lifecycle checks passed for the latest workflow; local XAMPP visual checks and full live-database/end-to-end tests remain necessary before production use.
 
 ---
 
@@ -71,7 +71,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 ### Available now (rebuilt)
 
 **Public site**
-- Responsive homepage: hero with date/type search, category tiles with live counts, popular cars, "how it works", live statistics, contact form
+- Cinematic automotive hero with a date/category search form, category tiles and live category counts, featured fleet cards, four-step booking explainer, fleet-owner workspace CTA, and contact CTA. The redesign uses a dark charcoal base, warm amber accents, responsive layouts, visible focus states and reduced-motion support.\n- Car listing with keyword search; filters for category, fuel, gearbox, minimum seats and maximum price per day; sorting; pagination
 - Car listing with keyword search; filters for category, fuel, gearbox, minimum seats and maximum price per day; sorting; pagination
 - Per-date availability badges (Available / Booked) based on real booking date overlap
 - Booking form checks vehicle conflicts and filters out drivers with overlapping reservations; final submission rechecks both under database locks
@@ -113,7 +113,7 @@ Live-database and end-to-end tests, further audit of inherited utility routes, a
 | Browser | Any current browser | |
 | Node.js / Composer | **Not required** | Frontend libraries are vendored in the repository |
 
-Frontend libraries are bundled locally (no CDN calls, no external requests): Bootstrap **5.3.8**, Font Awesome **6.7.2**, SweetAlert2 **11.26.25**.
+Bootstrap **5.3.8**, Font Awesome **6.7.2**, and SweetAlert2 **11.26.25** are bundled locally. The cinematic homepage and existing car-image helper may load vehicle photography from Unsplash, so those images require an internet connection; the app's PHP/MySQL workflows do not depend on an image API.
 
 ---
 
@@ -126,7 +126,7 @@ Use the upgraded project folder (unzip the delivered archive, or clone the repos
 ```bash
 git clone <your-repository-url> driveease
 cd driveease
-git checkout driveease-upgrade      # the upgrade branch; skip if you unzipped the archive
+git checkout feat/cinematic-public-experience  # preview the cinematic redesign branch
 ```
 
 ### 2. Create the database and a dedicated user
@@ -396,20 +396,20 @@ Each car has four rates: **AC / non-AC × per day / per km**.
 ```
 driveease/
 ├── public/                    ← web root (point your server here)
-│   ├── index.php              Homepage
+│   ├── index.php              Cinematic homepage: date/category search, fleet, steps and owner CTA
 │   ├── cars.php               Search, filters, sorting, pagination
 │   ├── car.php                Car details + availability checker
 │   ├── login.php              Unified login (customer / fleet owner)
 │   ├── register.php           Unified registration
 │   ├── logout.php             POST-only logout
 │   ├── contact.php            Contact-form handler
-│   ├── faq.php                FAQ
+│   ├── faq.php                FAQ\n│   ├── about.php / how-it-works.php / privacy.php / terms.php (if included in this branch)  Public information pages
 │   ├── connection.php         Legacy shim → secure DB layer
 │   ├── booking.php … clientview.php   Booking and fleet routes rebuilt; old entry points redirect or are retired
 │   ├── customerlogin.php, clientlogin.php, customersignup.php, clientsignup.php
 │   │                          301 redirects to the new pages (old links keep working)
 │   └── assets/
-│       ├── css/driveease.css  Theme
+│       ├── css/driveease.css  Shared dark/amber theme and responsive cinematic landing-page styles
 │       ├── js/app.js          SweetAlert2 toasts/confirm, date pickers, UX helpers
 │       ├── img/               Site and car images
 │       ├── vendor/            Bootstrap 5, Font Awesome 6, SweetAlert2 (local)
@@ -565,7 +565,7 @@ What the other two cover: filters and pagination counts, XSS and SQL-injection p
 
 **Payments and reports — core implemented.** Manual partial/full payments, printable invoices, fleet-scoped CSV export, date-filtered revenue and vehicle-performance reports are implemented. Refunds and broader analytics remain future work.
 
-**Finalization.** Complete live-database and browser regression testing, verify deployment configuration, consider CSP after auditing inline assets, and document any remaining gaps. Do not claim production readiness until those checks pass.
+**Finalization.** Review the cinematic landing page in XAMPP on desktop and mobile; verify search parameters and car links; refresh README screenshots after visual approval; complete live-database and browser regression testing; verify deployment configuration; consider CSP after auditing inline assets. Do not claim production readiness until these checks pass.
 
 ---
 
@@ -597,4 +597,4 @@ Old URLs such as `customerlogin.php` and `clientsignup.php` still work through 3
 
 **License:** the original repository does not declare a license, so none is asserted here. Add a `LICENSE` file (for example MIT) before reusing or redistributing this code.
 
-Contributions are welcome: fork, branch from the current development branch, follow the [rules above](#rules-to-follow), run both test suites, and open a pull request.
+Contributions are welcome: fork the repository, branch from `master` (or the maintainer-approved base), follow the [rules above](#rules-to-follow), run both test suites against a disposable development database, and open a focused pull request.\n\n### Current redesign review\n\n- Branch: [`feat/cinematic-public-experience`](https://github.com/ashutoshpalhare/DriveEase/tree/feat/cinematic-public-experience)\n- Draft PR: [#2 — Build cinematic DriveEase public experience](https://github.com/ashutoshpalhare/DriveEase/pull/2)\n- Scope: homepage, shared visual theme, car listing/detail presentation and responsive styling.\n- No database schema or booking business logic was intentionally changed. Run the XAMPP and booking regression checklist before merging.
