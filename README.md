@@ -12,7 +12,9 @@ DriveEase is an in-place upgrade of [Patna-Car-Rental](https://github.com/nikhil
 
 **Guides:** [🖥️ XAMPP setup](docs/XAMPP.md) · [🌐 Hosting (cPanel, Ubuntu + Apache, Ubuntu + Nginx)](docs/HOSTING.md)
 
-![Homepage](docs/screenshots/home-desktop.png)\n\n> **Current UI update:** the `feat/cinematic-public-experience` branch introduces a cinematic automotive homepage and a charcoal/amber visual system. Screenshots in this README may show the earlier interface until refreshed after local review.
+![Homepage](docs/screenshots/home-desktop.png)
+
+> **Current UI update:** the `feat/cinematic-public-experience` branch introduces a cinematic automotive homepage and a charcoal/amber visual system. Screenshots in this README may show the earlier interface until refreshed after local review.
 
 <p>
   <img src="docs/screenshots/cars-desktop.png" width="49%" alt="Car search with filters">
@@ -50,13 +52,14 @@ DriveEase is an in-place upgrade of [Patna-Car-Rental](https://github.com/nikhil
 
 ## Project status
 
-The upgrade is being delivered in phases. This table is the source of truth for what is finished.
+The upgrade is being delivered in phases. This table is the source of truth for what is finished. The cinematic redesign is developed on a separate branch and is not merged into `master` yet.
 
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Analysis of the original code and database | ✅ Done |
 | 2 | Secure foundation: config, prepared-statement DB layer, sessions, CSRF, validation, role auth, additive DB migration | ✅ Done |
-| 3 | `public/` web root, Bootstrap 5 UI, car search/filter/details, availability checking, unified login and registration | ✅ Done |\n| 3.1 | Cinematic public experience: hero, date/category search, category tiles, featured fleet, booking steps, fleet-owner CTA and shared dark/amber theme | 🟡 Implemented on `feat/cinematic-public-experience`; XAMPP visual regression pending |
+| 3 | `public/` web root, Bootstrap 5 UI, car search/filter/details, availability checking, unified login and registration | ✅ Done |
+| 3.1 | Cinematic public experience: hero, date/category search, category tiles, featured fleet, booking steps, fleet-owner CTA and shared dark/amber theme | 🟡 Implemented on `feat/cinematic-public-experience`; XAMPP visual regression pending |
 | 4 | Booking: date selection, server-side fare calculation, driver assignment, transactional availability checks, statuses and cancellation | ✅ Core flow implemented |
 | 5 | Owner-scoped vehicle/driver management, customer history and fleet rental ledger | 🟡 Core flows implemented; end-to-end verification pending |
 | 6 | Return flow, final invoices, partial/full payment ledger | 🟡 Core flow implemented; reports/refunds pending |
@@ -71,7 +74,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 ### Available now (rebuilt)
 
 **Public site**
-- Cinematic automotive hero with a date/category search form, category tiles and live category counts, featured fleet cards, four-step booking explainer, fleet-owner workspace CTA, and contact CTA. The redesign uses a dark charcoal base, warm amber accents, responsive layouts, visible focus states and reduced-motion support.\n- Car listing with keyword search; filters for category, fuel, gearbox, minimum seats and maximum price per day; sorting; pagination
+- Cinematic automotive hero with a date/category search form, category tiles and live category counts, featured fleet cards, four-step booking explainer, fleet-owner workspace CTA, and contact CTA. The redesign uses a dark charcoal base, warm amber accents, responsive layouts, visible focus states and reduced-motion support.
 - Car listing with keyword search; filters for category, fuel, gearbox, minimum seats and maximum price per day; sorting; pagination
 - Per-date availability badges (Available / Booked) based on real booking date overlap
 - Booking form checks vehicle conflicts and filters out drivers with overlapping reservations; final submission rechecks both under database locks
@@ -111,7 +114,7 @@ Live-database and end-to-end tests, further audit of inherited utility routes, a
 | MySQL / MariaDB | MySQL 5.7+ / MariaDB 10.3+ expected (tested on MariaDB 10.11) | InnoDB, `utf8mb4` |
 | Web server | Apache (with `mod_rewrite` for the fallback), Nginx, or PHP's built-in server for development | |
 | Browser | Any current browser | |
-| Node.js / Composer | **Not required** | Frontend libraries are vendored in the repository |
+| Node.js / Composer | **Not required** | Frontend libraries are vendored locally; remote vehicle photography may load from Unsplash. |
 
 Bootstrap **5.3.8**, Font Awesome **6.7.2**, and SweetAlert2 **11.26.25** are bundled locally. The cinematic homepage and existing car-image helper may load vehicle photography from Unsplash, so those images require an internet connection; the app's PHP/MySQL workflows do not depend on an image API.
 
@@ -403,7 +406,10 @@ driveease/
 │   ├── register.php           Unified registration
 │   ├── logout.php             POST-only logout
 │   ├── contact.php            Contact-form handler
-│   ├── faq.php                FAQ\n│   ├── about.php / how-it-works.php / privacy.php / terms.php (if included in this branch)  Public information pages
+│   ├── faq.php                FAQ
+│   ├── about.php              About DriveEase
+│   ├── how-it-works.php       Customer and fleet-owner workflow guide
+│   ├── privacy.php / terms.php  Starter policy pages (customize before launch)
 │   ├── connection.php         Legacy shim → secure DB layer
 │   ├── booking.php … clientview.php   Booking and fleet routes rebuilt; old entry points redirect or are retired
 │   ├── customerlogin.php, clientlogin.php, customersignup.php, clientsignup.php
@@ -597,4 +603,11 @@ Old URLs such as `customerlogin.php` and `clientsignup.php` still work through 3
 
 **License:** the original repository does not declare a license, so none is asserted here. Add a `LICENSE` file (for example MIT) before reusing or redistributing this code.
 
-Contributions are welcome: fork the repository, branch from `master` (or the maintainer-approved base), follow the [rules above](#rules-to-follow), run both test suites against a disposable development database, and open a focused pull request.\n\n### Current redesign review\n\n- Branch: [`feat/cinematic-public-experience`](https://github.com/ashutoshpalhare/DriveEase/tree/feat/cinematic-public-experience)\n- Draft PR: [#2 — Build cinematic DriveEase public experience](https://github.com/ashutoshpalhare/DriveEase/pull/2)\n- Scope: homepage, shared visual theme, car listing/detail presentation and responsive styling.\n- No database schema or booking business logic was intentionally changed. Run the XAMPP and booking regression checklist before merging.
+Contributions are welcome: fork the repository, branch from `master` (or the maintainer-approved base), follow the [rules above](#rules-to-follow), run both test suites against a disposable development database, and open a focused pull request.
+
+### Current redesign review
+
+- Branch: [`feat/cinematic-public-experience`](https://github.com/ashutoshpalhare/DriveEase/tree/feat/cinematic-public-experience)
+- Draft PR: [#2 — Build cinematic DriveEase public experience](https://github.com/ashutoshpalhare/DriveEase/pull/2)
+- Scope: homepage, shared visual theme, car listing/detail presentation and responsive styling.
+- No database schema or booking business logic was intentionally changed. Run the XAMPP and booking regression checklist before merging.
