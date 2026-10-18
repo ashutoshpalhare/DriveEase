@@ -33,13 +33,13 @@ function render_header(string $title, string $active = ''): void
     $app = (string) config('APP_NAME', 'DriveEase');
     ?>
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($title) ?> · <?= e($app) ?></title>
   <meta name="description" content="<?= e($title) ?> — <?= e($app) ?> car rental platform. Browse vehicles, understand the booking process and get support.">
-  <meta name="theme-color" content="#172554">
+  <meta name="theme-color" content="#0b0b0b">
   <link rel="icon" href="<?= e(asset('img/P.png')) ?>">
   <link rel="stylesheet" href="<?= e(asset('vendor/bootstrap/bootstrap.min.css')) ?>">
   <link rel="stylesheet" href="<?= e(asset('vendor/fontawesome/css/all.min.css')) ?>">
@@ -47,7 +47,7 @@ function render_header(string $title, string $active = ''): void
   <link rel="stylesheet" href="<?= e(asset('css/driveease.css')) ?>">
 </head>
 <body class="d-flex flex-column min-vh-100">
-<nav class="navbar navbar-expand-xxl navbar-dark bg-brand sticky-top shadow-sm">
+<nav class="navbar navbar-expand-xxl navbar-dark sticky-top shadow-sm">
   <div class="container">
     <a class="navbar-brand fw-bold" href="<?= e(url('index.php')) ?>"><i class="fa-solid fa-car-side me-2"></i><?= e($app) ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>

@@ -25,8 +25,9 @@ $activeFilters = array_diff_key($qsBase, ['sort' => 1]);                        
 
 render_header('Our cars', 'cars');
 ?>
+<section class="de-page-hero"><div class="container"><span class="de-section-kicker">THE DRIVE STARTS HERE</span><h1>Find the car that <em>gets you there.</em></h1><p>Explore the fleet, compare real rates and check availability for your dates.</p></div></section>
 <div class="container py-4">
-  <h1 class="h3 fw-bold mb-3">Choose your car</h1>
+  <h2 class="h5 fw-bold mb-3">Explore the fleet</h2>
   <?php if ($dateError): ?><div class="alert alert-warning"><?= e($dateError) ?></div><?php endif; ?>
 
   <button class="btn btn-outline-secondary d-md-none w-100 mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-expanded="<?= $activeFilters ? 'true' : 'false' ?>" aria-controls="filters"><i class="fa-solid fa-sliders me-1"></i>Filters<?= $activeFilters ? ' (' . count($activeFilters) . ' active)' : '' ?></button>
