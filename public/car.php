@@ -28,7 +28,7 @@ $bookUrl = url('booking.php?id=' . $id . ($start ? '&start=' . urlencode($start)
 
 render_header($car['car_name'], 'cars');
 ?>
-<div class="container py-4">
+<section class="de-detail-wrap"><div class="container py-4">
   <nav aria-label="breadcrumb"><ol class="breadcrumb small">
     <li class="breadcrumb-item"><a href="<?= e(url('cars.php')) ?>">Cars</a></li>
     <li class="breadcrumb-item active"><?= e($car['car_name']) ?></li>
@@ -82,4 +82,5 @@ render_header($car['car_name'], 'cars');
     </div>
   </div>
 </div>
-</div></section>\n<?php render_footer();
+</section>
+<?php render_footer();
