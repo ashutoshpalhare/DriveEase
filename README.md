@@ -62,7 +62,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 | 3.1 | Cinematic public experience: hero, date/category search, category tiles, featured fleet, booking steps, fleet-owner CTA and shared dark/amber theme | 🟡 Implemented on `feat/cinematic-public-experience`; XAMPP visual regression pending |
 | 4 | Booking: date selection, server-side fare calculation, driver assignment, transactional availability checks, statuses and cancellation | ✅ Core flow implemented |
 | 5 | Owner-scoped vehicle/driver management, customer history and fleet rental ledger | 🟡 Core flows implemented; end-to-end verification pending |
-| 6 | Return flow, final invoices, partial/full payment ledger | 🟡 Core flow implemented; reports/refunds pending |
+| 6 | Return flow, final invoices, partial/full payment ledger and fleet reports/CSV export | 🟡 Core flows implemented; end-to-end verification pending; refunds not implemented |
 | 7 | Security audit, obsolete route review, documentation and final regression pass | 🟡 Final verification in progress |
 
 **Current status:** booking, cancellation, return, invoices, customer history, fleet-owner rentals/payments, owner-scoped vehicle/driver management, CSV export, date-filtered revenue/vehicle-performance reports, and a fleet-scoped customer directory with booking history are implemented. The cinematic public redesign is on `feat/cinematic-public-experience` and is proposed in draft PR #2. Automated PHP syntax and database-free lifecycle checks passed for the latest workflow; local XAMPP visual checks and full live-database/end-to-end tests remain necessary before production use.
@@ -79,7 +79,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 - Per-date availability badges (Available / Booked) based on real booking date overlap
 - Booking form checks vehicle conflicts and filters out drivers with overlapping reservations; final submission rechecks both under database locks
 - Car details: specifications, AC / non-AC price table (per day and per km), availability checker, upcoming booked dates, booking call-to-action
-- FAQ page
+- Public information pages: About, How it works, FAQ, Contact, Privacy information and Terms of use. Privacy/terms are starter copy and must be reviewed for the actual business and jurisdiction.
 
 **Accounts**
 - One login page and one registration page, each with *Customer* and *Fleet owner* tabs
@@ -102,7 +102,7 @@ The upgrade is being delivered in phases. This table is the source of truth for 
 - Export the full fleet rental ledger to CSV for spreadsheet reporting; exports are owner-scoped and protect spreadsheet cells from formula injection.
 
 ### Remaining work
-Live-database and end-to-end tests, further audit of inherited utility routes, advanced date-filtered reports, refunds, and payment-gateway integration remain planned. Manual payment recording is not a payment gateway. See the [Roadmap](#roadmap).
+Live-database and end-to-end tests, further audit of inherited utility routes, refunds, payment-gateway integration, audit logs and two-factor authentication remain planned. Manual payment recording is not a payment gateway. The cinematic public redesign also needs visual regression testing in XAMPP and refreshed screenshots. See the [Roadmap](#roadmap).
 
 ---
 
