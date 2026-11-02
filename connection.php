@@ -1,6 +1,6 @@
 <?php
 
-function Connect(): mysqli
+function Connect()
 {
     $config = [];
     $localConfigPath = __DIR__ . '/config/config.local.php';
@@ -13,7 +13,7 @@ function Connect(): mysqli
         }
     }
 
-    $readSetting = static function (string $key, string $environmentVariable, ?string $default = null) use ($config): ?string {
+    $readSetting = function ($key, $environmentVariable, $default = null) use ($config) {
         $environmentValue = getenv($environmentVariable);
 
         if ($environmentValue !== false) {
