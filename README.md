@@ -1,23 +1,74 @@
 # Patna-Car-Rental
-Online Car Rental Management System 
 
-This is a Web based Application developed using PHP as a Host Language. Database for the Application is in "Database" folder. It can be imported to your localhost(phpMyAdmin) or any other servers. Also configure the "connection.php" to set up the necessary connections with the database.
+Online car rental management system built with PHP and MySQL.
 
-### Screenshots:
-> - Landing Page
-<img src="/Screenshots/index.jpg" width="800" height="450" alt="landing_page"/>
+## Requirements
 
-> - Available Cars
-<img src="/Screenshots/available_cars.png" width="800" height="450" alt="available_cars"/>
+- PHP with the MySQLi extension enabled
+- MySQL or MariaDB
+- Apache (for example, through XAMPP)
+- phpMyAdmin or another MySQL client
 
-> - Add Cars
-<img src="/Screenshots/add_car.png" width="800" height="700" alt="add_car"/>
+## Setup
 
-> - Booking Confirmation
-<img src="/Screenshots/booking_confirmation.png" width="800" height="800" alt="booking_confirm"/>
+1. Clone or download this repository into your web server's document root.
+2. Create a database named `carrental`.
+3. Import `database/carrental.sql` into that database using phpMyAdmin or your preferred MySQL client.
+4. Copy `config/config.local.example.php` to `config/config.local.php`.
+5. Update the values in `config/config.local.php` for your local database:
 
-> - Return Car
-<img src="/Screenshots/return_car.png" width="800" height="450" alt="return_car"/>
+   ```php
+   <?php
 
-> - Booking Summary
-<img src="/Screenshots/bookings.png" width="800" height="450" alt="booking_summary"/>
+   return [
+       'host' => 'localhost',
+       'user' => 'root',
+       'password' => '',
+       'name' => 'carrental',
+   ];
+   ```
+
+6. Open the project through your local Apache server.
+
+The local configuration file is intentionally excluded from Git. Do not commit real database credentials.
+
+## Environment-based configuration
+
+Instead of creating `config/config.local.php`, you can provide these environment variables:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DB_HOST` | `localhost` | MySQL server host |
+| `DB_USER` | Required | Database username |
+| `DB_PASSWORD` | Required (an empty value is allowed) | Database password |
+| `DB_NAME` | `carrental` | Database name |
+
+Environment variables take precedence over values in the local configuration file. The application fails with a clear configuration error when the database username or password is not configured, rather than silently attempting to connect with hardcoded root credentials.
+
+The `config/` directory denies direct HTTP access through Apache. Keep `config.local.php` private and use your hosting provider's environment-variable or secret-management facility for deployed environments.
+
+## Screenshots
+
+- **Landing Page**
+
+  ![Landing page](Screenshots/index.jpg)
+
+- **Available Cars**
+
+  ![Available cars](Screenshots/available_cars.png)
+
+- **Add Cars**
+
+  ![Add cars](Screenshots/add_car.png)
+
+- **Booking Confirmation**
+
+  ![Booking confirmation](Screenshots/booking_confirmation.png)
+
+- **Return Car**
+
+  ![Return car](Screenshots/return_car.png)
+
+- **Booking Summary**
+
+  ![Booking summary](Screenshots/bookings.png)
