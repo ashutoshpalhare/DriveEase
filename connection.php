@@ -1,15 +1,47 @@
 <?php
 
-function Connect()
+function Connect(): mysqli
 {
-	$dbhost = "localhost";
-	$dbuser = "root";
-	$dbpass = "";
-	$dbname = "carrental";
+    $config = [];
+    $localConfigPath = __DIR__ . '/config/config.local.php';
 
-	//Create Connection
-	$conn = new mysqli($dbhost, $dbuser, $dbpass, $dbname) or die($conn->connect_error);
+    if (is_file($localConfigPath)) {
+        $localConfig = require $localConfigPath;
 
-	return $conn;
+        if (is_array($localConfig)) {
+            $config = $localConfig;
+        }
+    }
+
+    $readSetting = static function (string $key, string $environmentVariable, ?string $default = null) use ($config): ?string {
+        $environmentValue = getenv($environmentVariable);
+
+        if ($environmentValue !== false) {
+            return $environmentValue;
+        }
+
+        if (array_key_exists($key, $config) && is_string($config[$key])) {
+            return $config[$key];
+        }
+
+        return $default;
+    };
+
+    $dbhost = $readSetting('host', 'DB_HOST', 'localhost');
+    $dbuser = $readSetting('user', 'DB_USER');
+    $dbpass = $readSetting('password', 'DB_PASSWORD');
+    $dbname = $readSetting('name', 'DB_NAME', 'carrental');
+
+    if ($dbuser === null || $dbpass === null) {
+        throw new RuntimeException(
+            'Database credentials are missing. Set DB_USER and DB_PASSWORD or create config/config.local.php from config/config.local.example.php.'
+        );
+    }
+
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+    $conn = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
+    $conn->set_charset('utf8mb4');
+
+    return $conn;
 }
-?>
